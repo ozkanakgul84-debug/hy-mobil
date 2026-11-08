@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Hesapla Yönet</string>
+    <string name="title_activity_main">Hesapla Yönet</string>
+    <string name="package_name">com.hesaplayonet.app</string>
+    <string name="custom_url_scheme">com.hesaplayonet.app</string>
+</resources>
