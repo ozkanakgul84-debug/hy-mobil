@@ -34,7 +34,8 @@ export async function istek<T = any>(yol: string, secenek: { metot?: string; gov
   const url = new URL(SUNUCU + '/wp-json/' + yol.replace(/^\//, ''));
   Object.entries(secenek.sorgu || {}).forEach(([k, v]) => url.searchParams.set(k, String(v)));
   const basliklar: Record<string, string> = { Accept: 'application/json' };
-  if (secenek.govde !== undefined) basliklar['Content-Type'] = 'application/json';
+  const formMu = typeof FormData !== 'undefined' && secenek.govde instanceof FormData;
+  if (secenek.govde !== undefined && !formMu) basliklar['Content-Type'] = 'application/json';
   if (oturum?.token) basliklar['X-HY-Token'] = oturum.token;
 
   let yanit: Response;
@@ -42,7 +43,7 @@ export async function istek<T = any>(yol: string, secenek: { metot?: string; gov
     yanit = await fetch(url.toString(), {
       method: secenek.metot || (secenek.govde !== undefined ? 'POST' : 'GET'),
       headers: basliklar,
-      body: secenek.govde !== undefined ? JSON.stringify(secenek.govde) : undefined,
+      body: secenek.govde === undefined ? undefined : formMu ? (secenek.govde as FormData) : JSON.stringify(secenek.govde),
     });
   } catch {
     throw new ApiHatasi('Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edin.');
@@ -84,6 +85,7 @@ export async function girisYap(kadi: string, sifre: string, kod = ''): Promise<G
     paket: JSON.stringify(paket),
     token: v.token, kullaniciAdi: v.kullaniciAdi, sirketKodu: v.sirketKodu, sirketAdi: v.sirketAdi,
     rol: v.rol, unvan: v.unvan, aktifModuller: v.aktifModuller, kartGorusYetkileri: v.kartGorusYetkileri, isAkisi: v.isAkisi,
+    surecButonYetkileri: v.surecButonYetkileri, crmIslemYetkileri: v.crmIslemYetkileri,
   };
   await oturumKaydet(o);
   return o;
