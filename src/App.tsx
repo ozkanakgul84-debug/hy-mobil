@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { IonApp, IonIcon, IonLabel, IonRouterOutlet, IonTabBar, IonTabButton, IonTabs, IonBadge, IonSpinner } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { albumsOutline, carOutline, notificationsOutline, personCircleOutline } from 'ionicons/icons';
+import { albumsOutline, appsOutline, carOutline, notificationsOutline, personCircleOutline } from 'ionicons/icons';
 import { App as CapApp } from '@capacitor/app';
-import { aktifOturum, cikisaAbone, oturumYukle } from './api/client';
+import { aktifOturum, cikisaAbone, cikisYap, oturumYukle } from './api/client';
 import { bildirimler } from './api/hy';
 import type { Oturum } from './api/types';
 import Giris from './pages/Giris';
@@ -14,6 +14,7 @@ import Saha from './pages/Saha';
 import GorevDetay from './pages/GorevDetay';
 import Bildirimler from './pages/Bildirimler';
 import Profil from './pages/Profil';
+import Moduller from './pages/Moduller';
 import { pushBaslat } from './push';
 
 export default function App() {
@@ -53,6 +54,7 @@ export default function App() {
               <Route path="/saha" element={<Saha />} />
               <Route path="/saha/:id" element={<GorevDetay />} />
               <Route path="/bildirimler" element={<Bildirimler onSayac={setOkunmamis} />} />
+              <Route path="/moduller" element={<Moduller onYenidenGiris={async () => { await cikisYap(); setOturum(null); }} />} />
               <Route path="/profil" element={<Profil oturum={aktifOturum()!} onCikis={() => setOturum(null)} />} />
               <Route path="*" element={<Navigate to={sahaAcik && oturum.rol !== 'YONETICI' ? '/saha' : '/kartlar'} replace />} />
             </Routes>
@@ -69,6 +71,9 @@ export default function App() {
             <IonTabButton tab="bildirimler" href="/bildirimler">
               <IonIcon icon={notificationsOutline} /><IonLabel>Bildirimler</IonLabel>
               {okunmamis > 0 && <IonBadge color="danger">{okunmamis}</IonBadge>}
+            </IonTabButton>
+            <IonTabButton tab="moduller" href="/moduller">
+              <IonIcon icon={appsOutline} /><IonLabel>Tüm modüller</IonLabel>
             </IonTabButton>
             <IonTabButton tab="profil" href="/profil">
               <IonIcon icon={personCircleOutline} /><IonLabel>Profil</IonLabel>
