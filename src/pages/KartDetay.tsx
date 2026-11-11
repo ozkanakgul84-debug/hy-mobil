@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonPage, IonTitle, IonToolbar, IonSpinner, IonTextarea, IonRefresher, IonRefresherContent, useIonToast, useIonActionSheet } from '@ionic/react';
-import { callOutline, logoWhatsapp, cameraOutline, navigateOutline, sendOutline } from 'ionicons/icons';
-import { adresMetni, fotoYukle, kartGetir, logCoz, logEkle } from '../api/hy';
+import { IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonPage, IonTitle, IonToolbar, IonSpinner, IonTextarea, IonRefresher, IonRefresherContent, useIonToast, useIonActionSheet, useIonAlert, useIonRouter } from '@ionic/react';
+import { callOutline, logoWhatsapp, cameraOutline, navigateOutline, sendOutline, createOutline, chevronDownOutline, checkmarkCircle, ellipseOutline } from 'ionicons/icons';
+import { adresMetni, fotoYukle, kartGetir, kartGuncelle, logCoz, logEkle, surecIsaretle } from '../api/hy';
 import { aktifOturum } from '../api/client';
-import { sutun } from '../api/sutun';
+import { sutun, sutunlar, surecAdimlari, type SurecAdimi } from '../api/sutun';
+import KartFormu from './KartFormu';
 import type { Kart } from '../api/types';
 import { fotoCek } from '../foto';
 import { yolTarifiUrl } from '../konum';
@@ -22,6 +23,9 @@ export default function KartDetay() {
   const [gonderiliyor, setGonderiliyor] = useState(false);
   const [toast] = useIonToast();
   const [menu] = useIonActionSheet();
+  const [alert] = useIonAlert();
+  const router = useIonRouter();
+  const [duzenle, setDuzenle] = useState(false);
   const y = aktifOturum()?.kartGorusYetkileri || {};
 
   const yukle = useCallback(async () => {
@@ -56,7 +60,52 @@ export default function KartDetay() {
     } catch (e: any) { toast({ message: e.message || 'Fotoğraf yüklenemedi', duration: 2500, color: 'danger' }); }
   };
 
+  const asamaSec = () => {
+    if (!kart) return;
+    menu({
+      header: 'Kartı taşı',
+      buttons: [
+        ...sutunlar().map((x) => ({ text: (x.id === kart.durum ? '● ' : '') + x.ad, handler: () => { asamaTasi(x.id); } })),
+        { text: 'Vazgeç', role: 'cancel' },
+      ],
+    });
+  };
+
+  const asamaTasi = async (hedef: string) => {
+    if (!kart || hedef === kart.durum) return;
+    const eski = kart.durum;
+    setKart({ ...kart, durum: hedef });
+    try { await kartGuncelle(kart.id, { durum: hedef }); toast({ message: 'Taşındı: ' + sutun(hedef).ad, duration: 1500 }); yukle(); }
+    catch (e: any) { setKart((k) => k && { ...k, durum: eski }); toast({ message: e.message, duration: 2500, color: 'danger' }); }
+  };
+
+  const tarihSor = (baslik: string) => new Promise<string | null>((coz) => {
+    alert({
+      header: baslik,
+      inputs: [{ name: 't', type: 'date' }],
+      buttons: [{ text: 'Atla', role: 'cancel', handler: () => coz(null) }, { text: 'Tamam', handler: (v) => coz(v?.t ? String(v.t).split('-').reverse().join('.') : null) }],
+      onDidDismiss: () => coz(null),
+    });
+  });
+
+  const surecTikla = async (a: SurecAdimi) => {
+    if (!kart) return;
+    const deger = !(kart.surecler || {})[a.key];
+    const bugun = new Date().toLocaleDateString('tr-TR');
+    let onayTarihi: string | null = null, teslimTarihi: string | null = null;
+    if (deger && a.aksiyon === 'pesinatAlindi') { onayTarihi = bugun; teslimTarihi = await tarihSor('Teslim tarihi'); }
+    if (deger && a.aksiyon === 'teslimEdildi') teslimTarihi = bugun;
+    const hedefSutun = deger && a.hedefSutun ? a.hedefSutun : '';
+    const onceki = kart;
+    setKart({ ...kart, surecler: { ...(kart.surecler || {}), [a.key]: deger }, durum: hedefSutun || kart.durum });
+    try {
+      await surecIsaretle(kart.id, { adim: a.key, deger, hedefSutun, adimEtiketi: a.etiket, onayTarihi, teslimTarihi });
+      yukle();
+    } catch (e: any) { setKart(onceki); toast({ message: e.message, duration: 2500, color: 'danger' }); }
+  };
+
   const s = kart ? sutun(kart.durum) : null;
+  const adimlar = surecAdimlari();
   const adr = kart ? adresMetni(kart.adres_panosu) : { metin: '' };
 
   return (
@@ -65,6 +114,7 @@ export default function KartDetay() {
         <IonToolbar>
           <IonButtons slot="start"><IonBackButton defaultHref="/kartlar" text="Kartlar" /></IonButtons>
           <IonTitle>#{id}</IonTitle>
+          {kart && <IonButtons slot="end"><IonButton onClick={() => setDuzenle(true)} aria-label="Düzenle"><IonIcon icon={createOutline} /></IonButton></IonButtons>}
         </IonToolbar>
       </IonHeader>
       <IonContent>
@@ -74,7 +124,7 @@ export default function KartDetay() {
         {kart && s && (
           <>
             <div style={{ padding: '16px 16px 8px' }}>
-              <span className="hy-etiket" style={{ background: s.renk + '22', color: s.renk }}>{s.ad}</span>
+              <button className="hy-etiket hy-asama" onClick={asamaSec} style={{ background: s.renk + '22', color: s.renk, border: 0 }}>{s.ad} <IonIcon icon={chevronDownOutline} /></button>
               <h1 style={{ margin: '8px 0 4px', fontSize: 24, fontWeight: 800 }}>{kart.musteri}</h1>
               <div className="hy-soluk">{kart.kaynak} · açan @{kart.karti_acan}</div>
             </div>
@@ -84,12 +134,28 @@ export default function KartDetay() {
                 <IonButton fill="solid" color="secondary" href={`tel:${kart.telefon}`}><IonIcon icon={callOutline} slot="start" />Ara</IonButton>
               )}
               {y.iletisimGorebilir !== false && kart.telefon && (
-                <IonButton fill="solid" color="success" href={`https://wa.me/${waNumara(kart.telefon)}`} target="_blank"><IonIcon icon={logoWhatsapp} slot="start" />WhatsApp</IonButton>
+                <IonButton fill="solid" color="success" onClick={() => y.waMailKullanabilir === false ? window.open(`https://wa.me/${waNumara(kart.telefon)}`, '_blank') : router.push(`/kartlar/${kart.id}/whatsapp`)}><IonIcon icon={logoWhatsapp} slot="start" />WhatsApp</IonButton>
               )}
               {y.kameraKullanabilir !== false && (
                 <IonButton fill="solid" onClick={foto}><IonIcon icon={cameraOutline} slot="start" />Fotoğraf</IonButton>
               )}
             </div>
+
+            {adimlar.length > 0 && (
+              <>
+                <div className="hy-bolum">Süreç</div>
+                <div className="hy-surec">
+                  {adimlar.map((a) => {
+                    const ok = !!(kart.surecler || {})[a.key];
+                    return (
+                      <button key={a.key} className={'hy-surec-adim' + (ok ? ' ok' : '')} onClick={() => surecTikla(a)}>
+                        <IonIcon icon={ok ? checkmarkCircle : ellipseOutline} /> {a.etiket}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
 
             <div className="hy-bolum">İş tanımı</div>
             <div className="hy-kutu" style={{ whiteSpace: 'pre-wrap' }}>{kart.tanim || '—'}</div>
@@ -133,6 +199,7 @@ export default function KartDetay() {
             <div style={{ height: 24 }} />
           </>
         )}
+        <KartFormu acik={duzenle} kart={kart} onKapat={() => setDuzenle(false)} onKaydedildi={() => { setDuzenle(false); yukle(); }} />
       </IonContent>
     </IonPage>
   );

@@ -13,7 +13,9 @@ export interface Oturum {
     waMailKullanabilir?: boolean;
     kameraKullanabilir?: boolean;
   };
-  isAkisi?: { sutunlar?: { id: string; ad: string; renk?: string }[] };
+  isAkisi?: { sutunlar?: { id: string; ad?: string; etiket?: string; renk?: string; sira?: number; arsiv?: boolean }[]; surec_adimlari?: any[]; surecAdimlari?: any[] };
+  surecButonYetkileri?: Record<string, boolean>;
+  crmIslemYetkileri?: { yeniKartAcabilir?: boolean; klasorAcabilir?: boolean };
   demo?: boolean;
   /** Web panelinin beklediği giriş paketi (erp_oturum_paket), JSON metni. 0.2.0'dan önceki oturumlarda yok. */
   paket?: string;
@@ -29,6 +31,7 @@ export interface Kart {
   kaynak: string;
   karti_acan: string;
   log_metni: string;
+  surecler?: Record<string, boolean>;
   onay_tarihi: string | null;
   teslim_tarihi: string | null;
   adres_panosu: string | Record<string, unknown> | null;
@@ -71,4 +74,23 @@ export interface LogSatiri {
   zaman: string;
   metin: string;
   foto?: string;
+}
+
+export interface WaMesaj {
+  id: number | string;
+  yon: 'gelen' | 'giden';
+  tip: string;
+  metin: string;
+  tarih: string;
+  durum?: string;
+  gonderen?: string;
+  medya?: { url?: string; ad?: string } | null;
+}
+
+export interface WaYazisma {
+  mesajlar: WaMesaj[];
+  pencere_acik?: boolean;
+  son_gelen?: string | null;
+  degisim?: string;
+  tam?: boolean;
 }

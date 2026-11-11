@@ -57,3 +57,23 @@
 .hy-adim span.ok { color: var(--ion-color-primary); border-color: var(--ion-color-primary); font-weight: 700; }
 .hy-bos { text-align: center; padding: 48px 24px; color: var(--hy-soluk); }
 .hy-bos ion-icon { font-size: 48px; opacity: 0.5; }
+
+.hy-asama { cursor: pointer; font-size: 13px; padding: 5px 10px; }
+.hy-asama ion-icon { font-size: 14px; }
+.hy-surec { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 12px; }
+.hy-surec-adim { display: inline-flex; align-items: center; gap: 6px; padding: 9px 12px; border-radius: 12px; border: 1px solid rgba(128,128,128,0.3); background: var(--hy-kart-bg); color: inherit; font-size: 14px; }
+.hy-surec-adim ion-icon { font-size: 18px; color: var(--hy-soluk); }
+.hy-surec-adim.ok { border-color: #2ecc71; background: rgba(46,204,113,0.12); font-weight: 600; }
+.hy-surec-adim.ok ion-icon { color: #2ecc71; }
+
+.hy-wa { --background: #ece5dd; }
+@media (prefers-color-scheme: dark) { .hy-wa { --background: #0b141a; } }
+.hy-wa-liste { display: flex; flex-direction: column; gap: 6px; padding: 10px 10px 16px; }
+.hy-wa-balon { max-width: 82%; padding: 7px 10px 5px; border-radius: 10px; background: #fff; color: #111; box-shadow: 0 1px 1px rgba(0,0,0,0.1); align-self: flex-start; }
+.hy-wa-balon.giden { background: #d9fdd3; align-self: flex-end; }
+@media (prefers-color-scheme: dark) { .hy-wa-balon { background: #202c33; color: #e9edef; } .hy-wa-balon.giden { background: #005c4b; } }
+.hy-wa-balon img { max-width: 100%; border-radius: 8px; display: block; margin-bottom: 4px; }
+.hy-wa-metin { white-space: pre-wrap; word-break: break-word; font-size: 15px; }
+.hy-wa-dosya { display: inline-flex; align-items: center; gap: 6px; color: inherit; font-weight: 600; margin-bottom: 4px; }
+.hy-wa-alt { font-size: 11px; opacity: 0.6; text-align: right; margin-top: 2px; }
+.hy-wa-uyari { background: #fff3cd; color: #664d03; font-size: 13px; padding: 8px 12px; }

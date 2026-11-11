@@ -1,5 +1,5 @@
 import { istek } from './client';
-import type { Bildirim, Gorev, GorevDurum, Kart, LogSatiri } from './types';
+import type { Bildirim, Gorev, GorevDurum, Kart, LogSatiri, WaYazisma } from './types';
 
 export async function kartlariGetir(): Promise<Kart[]> {
   const v = await istek<{ kartlar: Kart[] }>('hy-erp/v1/crm/kartlar');
@@ -9,6 +9,39 @@ export async function kartlariGetir(): Promise<Kart[]> {
 export async function kartGetir(id: number): Promise<Kart> {
   const v = await istek<any>(`hy-erp/v1/crm/kartlar/${id}`);
   return (v.kart || v) as Kart;
+}
+
+export type KartAlanlari = Partial<Pick<Kart, 'musteri' | 'telefon' | 'email' | 'tanim' | 'durum'>>;
+
+export async function kartGuncelle(id: number, alanlar: KartAlanlari) {
+  return istek(`hy-erp/v1/crm/kartlar/${id}`, { metot: 'PATCH', govde: alanlar });
+}
+
+/** Kişi bilgileri (ad/telefon/e-posta) ayrı uçtan güncellenir; değişiklik karta log olarak düşer. */
+export async function kisiGuncelle(id: number, v: { musteri: string; telefon: string; email: string }) {
+  return istek(`hy-erp/v1/crm/kartlar/${id}/kisi`, { metot: 'PATCH', govde: v });
+}
+
+export async function kartAc(alanlar: { musteri: string; telefon: string; email: string; kaynak: string; tanim: string }): Promise<number | undefined> {
+  const r = await istek<any>('hy-erp/v1/crm/kartlar', { govde: alanlar });
+  const k = r?.yeniKart || r?.kart || r;
+  return Number(k?.id || k?.ID || k?.kart_id) || undefined;
+}
+
+/** Süreç adımını işaretler/kaldırır (web panelindeki kart üstü adımlar ile aynı uç). */
+export async function surecIsaretle(id: number, govde: { adim: string; deger: boolean; hedefSutun: string; adimEtiketi: string; onayTarihi: string | null; teslimTarihi: string | null }) {
+  return istek(`hy-erp/v1/crm/kartlar/${id}/surec`, { metot: 'PATCH', govde });
+}
+
+export async function waGetir(id: number, degisim = ''): Promise<WaYazisma> {
+  return istek<WaYazisma>(`hy-erp/v1/crm/kartlar/${id}/whatsapp`, { sorgu: degisim ? { degisim } : {} });
+}
+
+export async function waGonder(id: number, mesaj: string, dosya?: { blob: Blob; ad: string }) {
+  const fd = new FormData();
+  if (mesaj) fd.append('mesaj', mesaj);
+  if (dosya) fd.append('dosya', dosya.blob, dosya.ad);
+  return istek(`hy-erp/v1/crm/kartlar/${id}/whatsapp`, { govde: fd });
 }
 
 export async function logEkle(id: number, metin: string) {
@@ -58,7 +91,7 @@ export function logCoz(metin: string): LogSatiri[] {
     const m = s.match(/\[([0-9]{2}\.[0-9]{2}\.[0-9]{4}[^\]]*)\]\s*(.*)$/);
     const foto = s.match(/\[FOTO:([^\]|]+)/)?.[1];
     const zaman = m ? m[1].trim() : '';
-    const govde = (m ? m[2] : s).replace(/\[(FOTO|VIDEO|SES):[^\]]*\]/g, '').replace(/\{[a-z0-9_-]+\}/gi, '').trim();
+    const govde = (m ? m[2] : s).replace(/\[(FOTO|VIDEO|SES):[^\]]*\]/g, '').replace(/\{[a-z0-9_-]+\}/gi, '').replace(/^:\s*/, '').trim();
     return { zaman, metin: govde, foto };
   }).reverse();
 }

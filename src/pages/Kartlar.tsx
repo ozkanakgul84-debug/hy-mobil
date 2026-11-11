@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { IonContent, IonHeader, IonPage, IonRefresher, IonRefresherContent, IonSearchbar, IonSegment, IonSegmentButton, IonLabel, IonTitle, IonToolbar, IonSpinner, IonIcon, useIonViewWillEnter, useIonRouter } from '@ionic/react';
-import { albumsOutline } from 'ionicons/icons';
+import { IonContent, IonFab, IonFabButton, IonHeader, IonPage, IonRefresher, IonRefresherContent, IonSearchbar, IonSegment, IonSegmentButton, IonLabel, IonTitle, IonToolbar, IonSpinner, IonIcon, useIonViewWillEnter, useIonRouter } from '@ionic/react';
+import { albumsOutline, addOutline } from 'ionicons/icons';
+import { aktifOturum } from '../api/client';
+import KartFormu from './KartFormu';
 import { kartlariGetir } from '../api/hy';
 import { sutun, sutunlar } from '../api/sutun';
 import type { Kart } from '../api/types';
@@ -11,6 +13,8 @@ export default function Kartlar() {
   const [ara, setAra] = useState('');
   const [filtre, setFiltre] = useState('hepsi');
   const router = useIonRouter();
+  const [yeni, setYeni] = useState(false);
+  const yeniAcabilir = aktifOturum()?.crmIslemYetkileri?.yeniKartAcabilir !== false;
 
   const yukle = useCallback(async () => {
     try { setKartlar(await kartlariGetir()); setHata(''); } catch (e: any) { setHata(e.message); }
@@ -36,7 +40,7 @@ export default function Kartlar() {
         <IonToolbar>
           <IonSegment scrollable value={filtre} onIonChange={(e) => setFiltre(String(e.detail.value))}>
             <IonSegmentButton value="hepsi"><IonLabel>Hepsi</IonLabel></IonSegmentButton>
-            {sutunlar().filter((s) => s.id !== 'arsiv').map((s) => (
+            {sutunlar().filter((s) => !s.arsiv).map((s) => (
               <IonSegmentButton key={s.id} value={s.id}><IonLabel>{s.ad} ({sayac(s.id)})</IonLabel></IonSegmentButton>
             ))}
           </IonSegment>
@@ -63,7 +67,13 @@ export default function Kartlar() {
             </div>
           );
         })}
-        <div style={{ height: 16 }} />
+        <div style={{ height: 88 }} />
+        {yeniAcabilir && (
+          <IonFab slot="fixed" vertical="bottom" horizontal="end">
+            <IonFabButton onClick={() => setYeni(true)} aria-label="Yeni kart"><IonIcon icon={addOutline} /></IonFabButton>
+          </IonFab>
+        )}
+        <KartFormu acik={yeni} onKapat={() => setYeni(false)} onKaydedildi={(id) => { setYeni(false); yukle(); if (id) router.push(`/kartlar/${id}`); }} />
       </IonContent>
     </IonPage>
   );
