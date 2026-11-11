@@ -16,6 +16,9 @@ import GorevDetay from './pages/GorevDetay';
 import Bildirimler from './pages/Bildirimler';
 import Profil from './pages/Profil';
 import Moduller from './pages/Moduller';
+import Fiyat from './pages/Fiyat';
+import Muhasebe from './pages/muhasebe/Muhasebe';
+import FaturaDetay from './pages/muhasebe/FaturaDetay';
 import { pushBaslat } from './push';
 
 export default function App() {
@@ -56,6 +59,9 @@ export default function App() {
               <Route path="/saha" element={<Saha />} />
               <Route path="/saha/:id" element={<GorevDetay />} />
               <Route path="/bildirimler" element={<Bildirimler onSayac={setOkunmamis} />} />
+              <Route path="/fiyat" element={<Fiyat />} />
+              <Route path="/muhasebe" element={<Muhasebe />} />
+              <Route path="/muhasebe/fatura/:id" element={<FaturaDetay />} />
               <Route path="/moduller" element={<Moduller onYenidenGiris={async () => { await cikisYap(); setOturum(null); }} />} />
               <Route path="/profil" element={<Profil oturum={aktifOturum()!} onCikis={() => setOturum(null)} />} />
               <Route path="*" element={<Navigate to={sahaAcik && oturum.rol !== 'YONETICI' ? '/saha' : '/kartlar'} replace />} />
@@ -75,7 +81,7 @@ export default function App() {
               {okunmamis > 0 && <IonBadge color="danger">{okunmamis}</IonBadge>}
             </IonTabButton>
             <IonTabButton tab="moduller" href="/moduller">
-              <IonIcon icon={appsOutline} /><IonLabel>Tüm modüller</IonLabel>
+              <IonIcon icon={appsOutline} /><IonLabel>Menü</IonLabel>
             </IonTabButton>
             <IonTabButton tab="profil" href="/profil">
               <IonIcon icon={personCircleOutline} /><IonLabel>Profil</IonLabel>

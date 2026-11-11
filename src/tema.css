@@ -77,3 +77,17 @@
 .hy-wa-dosya { display: inline-flex; align-items: center; gap: 6px; color: inherit; font-weight: 600; margin-bottom: 4px; }
 .hy-wa-alt { font-size: 11px; opacity: 0.6; text-align: right; margin-top: 2px; }
 .hy-wa-uyari { background: #fff3cd; color: #664d03; font-size: 13px; padding: 8px 12px; }
+
+.hy-kalem { margin: 8px 12px; padding: 8px 12px 10px; border-radius: 14px; background: var(--hy-kart-bg); }
+.hy-kalem-izgara { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px 10px; align-items: end; }
+.hy-kalem-tutar { grid-column: span 1; text-align: right; font-weight: 700; padding-bottom: 10px; }
+.hy-toplam > div { display: flex; justify-content: space-between; padding: 3px 0; }
+.hy-toplam .genel { font-size: 18px; border-top: 1px solid rgba(128,128,128,0.25); margin-top: 4px; padding-top: 8px; }
+.hy-menu-izgara { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 12px; }
+.hy-menu-kutu { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; padding: 16px 14px; border-radius: 16px; background: var(--hy-kart-bg); border: 0; color: inherit; text-align: left; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.hy-menu-kutu ion-icon { font-size: 28px; color: var(--ion-color-primary); }
+.hy-menu-kutu b { font-size: 16px; }
+.hy-menu-kutu span { font-size: 12px; color: var(--hy-soluk); }
+
+.hy-secici { flex: 1; display: flex; justify-content: space-between; align-items: center; gap: 8px; text-align: left; padding: 10px 2px; background: none; border: 0; color: inherit; font-weight: 600; font-size: 15px; }
+.hy-secici ion-icon { color: var(--hy-soluk); }
