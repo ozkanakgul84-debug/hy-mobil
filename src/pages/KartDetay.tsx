@@ -6,6 +6,8 @@ import { adresMetni, fotoYukle, kartGetir, kartGuncelle, logCoz, logEkle, surecI
 import { aktifOturum } from '../api/client';
 import { sutun, sutunlar, surecAdimlari, type SurecAdimi } from '../api/sutun';
 import KartFormu from './KartFormu';
+import FaturaFormu, { type FaturaBaslangic } from './muhasebe/FaturaFormu';
+import { crmKartCariAc, crmKartFatura } from '../api/muhasebe';
 import type { Kart } from '../api/types';
 import { fotoCek } from '../foto';
 import { yolTarifiUrl } from '../konum';
@@ -26,6 +28,9 @@ export default function KartDetay() {
   const [alert] = useIonAlert();
   const router = useIonRouter();
   const [duzenle, setDuzenle] = useState(false);
+  const [fatura, setFatura] = useState<FaturaBaslangic | null>(null);
+  const oturum = aktifOturum();
+  const modulVar = (m: string) => oturum?.rol === 'YONETICI' || !(oturum?.aktifModuller || []).length || (oturum?.aktifModuller || []).includes(m);
   const y = aktifOturum()?.kartGorusYetkileri || {};
 
   const yukle = useCallback(async () => {
@@ -104,6 +109,25 @@ export default function KartDetay() {
     } catch (e: any) { setKart(onceki); toast({ message: e.message, duration: 2500, color: 'danger' }); }
   };
 
+  /** CRM kartından fatura: carisi yoksa oluşturulur, fiyatlandırma dosyasındaki kalemler gelir. */
+  const faturaKes = async () => {
+    if (!kart) return;
+    try {
+      const d = await crmKartFatura(kart.id);
+      let cariId = d.cari_id;
+      if (!cariId) {
+        const evet = await new Promise<boolean>((coz) => alert({
+          header: 'Cari oluşturulsun mu?', message: 'Bu müşterinin muhasebede carisi yok. Kart bilgileriyle oluşturulacak.',
+          buttons: [{ text: 'Vazgeç', role: 'cancel', handler: () => coz(false) }, { text: 'Oluştur', handler: () => coz(true) }], onDidDismiss: () => coz(false),
+        }));
+        if (!evet) return;
+        cariId = (await crmKartCariAc(kart.id)).id;
+      }
+      const p = (d.projeler || []).find((x: any) => x.id === d.kart?.proje_id);
+      setFatura({ tip: 'satis', cari_id: cariId, kart_id: kart.id, kart_no: d.kart?.kart_no, kalemler: d.kalemler, aciklama: p?.proje_adi || '' });
+    } catch (e: any) { toast({ message: e.message, duration: 3000, color: 'danger' }); }
+  };
+
   const s = kart ? sutun(kart.durum) : null;
   const adimlar = surecAdimlari();
   const adr = kart ? adresMetni(kart.adres_panosu) : { metin: '' };
@@ -157,6 +181,13 @@ export default function KartDetay() {
               </>
             )}
 
+            {(modulVar('muhasebe') || modulVar('fiyatlandirma')) && (
+              <div className="hy-eylemler" style={{ marginTop: 12 }}>
+                {modulVar('fiyatlandirma') && <IonButton fill="outline" onClick={() => router.push(`/fiyat?kart=${kart.id}`)}>Fiyat hesapla</IonButton>}
+                {modulVar('muhasebe') && <IonButton fill="outline" onClick={faturaKes}>Fatura kes</IonButton>}
+              </div>
+            )}
+
             <div className="hy-bolum">İş tanımı</div>
             <div className="hy-kutu" style={{ whiteSpace: 'pre-wrap' }}>{kart.tanim || '—'}</div>
 
@@ -199,6 +230,7 @@ export default function KartDetay() {
             <div style={{ height: 24 }} />
           </>
         )}
+        <FaturaFormu acik={!!fatura} baslangic={fatura} onKapat={() => setFatura(null)} onKaydedildi={(fid) => { setFatura(null); router.push(`/muhasebe/fatura/${fid}`); }} />
         <KartFormu acik={duzenle} kart={kart} onKapat={() => setDuzenle(false)} onKaydedildi={() => { setDuzenle(false); yukle(); }} />
       </IonContent>
     </IonPage>
