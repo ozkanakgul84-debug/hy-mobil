@@ -79,7 +79,9 @@ export async function girisYap(kadi: string, sifre: string, kod = ''): Promise<G
   if (v?.durum === 'kod_gerekli') return { kodGerekli: true, mesaj: v.mesaj || 'E-postanıza gelen 6 haneli kodu girin.' };
   if (!v?.token) throw new ApiHatasi(v?.mesaj || 'Giriş başarısız.');
   if (v.cihaz) await Preferences.set({ key: 'hy_cihaz', value: String(v.cihaz) });
+  const { cihaz: _cihaz, ...paket } = v; // web paneli giriş cevabını olduğu gibi bekler (cihaz anahtarı hariç)
   const o: Oturum = {
+    paket: JSON.stringify(paket),
     token: v.token, kullaniciAdi: v.kullaniciAdi, sirketKodu: v.sirketKodu, sirketAdi: v.sirketAdi,
     rol: v.rol, unvan: v.unvan, aktifModuller: v.aktifModuller, kartGorusYetkileri: v.kartGorusYetkileri, isAkisi: v.isAkisi,
   };

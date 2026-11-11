@@ -15,6 +15,8 @@ export interface Oturum {
   };
   isAkisi?: { sutunlar?: { id: string; ad: string; renk?: string }[] };
   demo?: boolean;
+  /** Web panelinin beklediği giriş paketi (erp_oturum_paket), JSON metni. 0.2.0'dan önceki oturumlarda yok. */
+  paket?: string;
 }
 
 export interface Kart {
