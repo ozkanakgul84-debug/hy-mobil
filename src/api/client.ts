@@ -59,7 +59,15 @@ export async function istek<T = any>(yol: string, secenek: { metot?: string; gov
   return veri as T;
 }
 
-export async function girisYap(kadi: string, sifre: string): Promise<Oturum> {
+export type GirisSonuc = Oturum | { kodGerekli: true; mesaj: string };
+
+async function cihazAnahtari(): Promise<string> {
+  return (await Preferences.get({ key: 'hy_cihaz' })).value || '';
+}
+
+/** Giriş. Sunucu yeni cihazda e-postaya 6 haneli kod yollar ("kod_gerekli");
+ *  o zaman aynı bilgilerle kod da gönderilerek tekrar çağrılır. */
+export async function girisYap(kadi: string, sifre: string, kod = ''): Promise<GirisSonuc> {
   if (kadi.trim().toUpperCase() === 'DEMO/DEMO') {
     const o: Oturum = { token: 'demo', kullaniciAdi: 'demo', sirketKodu: 'DEMO', sirketAdi: 'Demo Reklam', rol: 'YONETICI', unvan: 'Şirket Yöneticisi', demo: true,
       kartGorusYetkileri: { aramaYapabilir: true, iletisimGorebilir: true, waMailKullanabilir: true, kameraKullanabilir: true } };
@@ -67,8 +75,10 @@ export async function girisYap(kadi: string, sifre: string): Promise<Oturum> {
     return o;
   }
   oturum = null;
-  const v = await istek<any>('erp/v1/giris', { govde: { kadi: kadi.trim(), sifre } });
+  const v = await istek<any>('erp/v1/giris', { govde: { kadi: kadi.trim(), sifre, kod: kod.replace(/\D/g, ''), cihaz: await cihazAnahtari() } });
+  if (v?.durum === 'kod_gerekli') return { kodGerekli: true, mesaj: v.mesaj || 'E-postanıza gelen 6 haneli kodu girin.' };
   if (!v?.token) throw new ApiHatasi(v?.mesaj || 'Giriş başarısız.');
+  if (v.cihaz) await Preferences.set({ key: 'hy_cihaz', value: String(v.cihaz) });
   const o: Oturum = {
     token: v.token, kullaniciAdi: v.kullaniciAdi, sirketKodu: v.sirketKodu, sirketAdi: v.sirketAdi,
     rol: v.rol, unvan: v.unvan, aktifModuller: v.aktifModuller, kartGorusYetkileri: v.kartGorusYetkileri, isAkisi: v.isAkisi,

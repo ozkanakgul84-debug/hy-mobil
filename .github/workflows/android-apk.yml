@@ -1,8 +1,10 @@
-name: Android test APK
+name: Android APK
 on:
   push:
     branches: [main]
   workflow_dispatch:
+permissions:
+  contents: write
 jobs:
   derle:
     runs-on: ubuntu-latest
@@ -12,15 +14,25 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 21
       - run: npm ci
       - run: npm run build
       - run: npx cap sync android
-      - run: cd android && chmod +x gradlew && ./gradlew assembleDebug --no-daemon
+      # İmzasız release APK: imza, sabit anahtarla dağıtımdan önce ayrıca atılır
+      - run: cd android && chmod +x gradlew && ./gradlew assembleRelease --no-daemon
+      - run: cp android/app/build/outputs/apk/release/app-release-unsigned.apk hesapla-yonet-imzasiz.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: hesapla-yonet-test-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: hesapla-yonet-imzasiz-apk
+          path: hesapla-yonet-imzasiz.apk
+      # Derlenen APK "dagitim" dalına konur (tek dosya, geçmişsiz) → sunucuya yükleme buradan alınır
+      - name: dagitim dalını güncelle
+        run: |
+          mkdir /tmp/d && cp hesapla-yonet-imzasiz.apk /tmp/d/ && cd /tmp/d
+          echo "${GITHUB_SHA::7} $(date -u +%FT%TZ)" > SURUM.txt
+          git init -q -b dagitim && git add -A
+          git -c user.name=github-actions -c user.email=actions@github.com commit -qm "APK ${GITHUB_SHA::7}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" dagitim
