@@ -2,8 +2,8 @@
   "appId": "com.hesaplayonet.app",
   "appName": "Hesapla Yönet",
   "webDir": "dist",
-  "android": { "appendUserAgent": "HYApp/0.5" },
-  "ios": { "appendUserAgent": "HYApp/0.5", "contentInset": "never" },
+  "android": { "appendUserAgent": "HYApp/0.6" },
+  "ios": { "appendUserAgent": "HYApp/0.6", "contentInset": "never" },
   "plugins": {
     "CapacitorHttp": { "enabled": true },
     "SplashScreen": { "launchShowDuration": 700, "backgroundColor": "#1e2a3a", "showSpinner": false },

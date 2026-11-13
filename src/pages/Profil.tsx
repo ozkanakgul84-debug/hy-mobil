@@ -21,7 +21,7 @@ export default function Profil({ oturum, onCikis }: { oturum: Oturum; onCikis: (
         </IonList>
         <div style={{ padding: 16 }}>
           <IonButton expand="block" color="danger" fill="outline" onClick={async () => { await cikisYap(); onCikis(); }}>Çıkış yap</IonButton>
-          <p className="hy-soluk" style={{ textAlign: 'center' }}>Hesapla Yönet · sürüm 0.5.0</p>
+          <p className="hy-soluk" style={{ textAlign: 'center' }}>Hesapla Yönet · sürüm 0.6.0</p>
         </div>
       </IonContent>
     </IonPage>

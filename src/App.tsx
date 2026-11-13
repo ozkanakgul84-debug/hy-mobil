@@ -11,6 +11,9 @@ import Giris from './pages/Giris';
 import Kartlar from './pages/Kartlar';
 import KartDetay from './pages/KartDetay';
 import WaYazisma from './pages/WaYazisma';
+import KartEposta from './pages/KartEposta';
+import KartYazisma from './pages/KartYazisma';
+import KartDosyalar from './pages/KartDosyalar';
 import Saha from './pages/Saha';
 import GorevDetay from './pages/GorevDetay';
 import Bildirimler from './pages/Bildirimler';
@@ -58,6 +61,9 @@ export default function App() {
               <Route path="/kartlar" element={<Kartlar />} />
               <Route path="/kartlar/:id" element={<KartDetay />} />
               <Route path="/kartlar/:id/whatsapp" element={<WaYazisma />} />
+              <Route path="/kartlar/:id/eposta" element={<KartEposta />} />
+              <Route path="/kartlar/:id/yazisma" element={<KartYazisma />} />
+              <Route path="/kartlar/:id/dosyalar" element={<KartDosyalar />} />
               <Route path="/saha" element={<Saha />} />
               <Route path="/saha/:id" element={<GorevDetay />} />
               <Route path="/bildirimler" element={<Bildirimler onSayac={setOkunmamis} />} />
