@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { IonButton, IonButtons, useIonActionSheet, useIonToast, IonContent, IonFab, IonFabButton, IonHeader, IonPage, IonRefresher, IonRefresherContent, IonSearchbar, IonSegment, IonSegmentButton, IonLabel, IonTitle, IonToolbar, IonSpinner, IonIcon, useIonViewWillEnter, useIonRouter } from '@ionic/react';
-import { albumsOutline, addOutline, listOutline, swapHorizontalOutline, gridOutline } from 'ionicons/icons';
+import { callOutline, albumsOutline, addOutline, listOutline, swapHorizontalOutline, gridOutline } from 'ionicons/icons';
 import { aktifOturum } from '../api/client';
 import KartFormu from './KartFormu';
 import { kartGuncelle, kartlariGetir } from '../api/hy';
@@ -15,6 +15,13 @@ export default function Kartlar() {
   const router = useIonRouter();
   const [yeni, setYeni] = useState(false);
   const yeniAcabilir = aktifOturum()?.crmIslemYetkileri?.yeniKartAcabilir !== false;
+  const aramaVar = aktifOturum()?.kartGorusYetkileri?.iletisimGorebilir !== false && aktifOturum()?.kartGorusYetkileri?.aramaYapabilir !== false;
+  /** Kartı açmadan müşteriyi ara (telefonun arama ekranı açılır). */
+  const AraDugme = ({ k }: { k: Kart }) => (aramaVar && k.telefon ? (
+    <a className="hy-ara-dugme" href={`tel:${k.telefon.replace(/[^\d+]/g, '')}`} onClick={(e) => e.stopPropagation()} aria-label={'Ara: ' + k.musteri}>
+      <IonIcon icon={callOutline} />Ara
+    </a>
+  ) : null);
   const [pano, setPano] = useState(() => { try { return localStorage.getItem('hy_kart_gorunum') === 'pano'; } catch { return false; } });
   const [menu] = useIonActionSheet();
   const [toast] = useIonToast();
@@ -85,6 +92,7 @@ export default function Kartlar() {
                       </div>
                       <b>{k.musteri || 'İsimsiz müşteri'}</b>
                       <p>{k.tanim}</p>
+                      <AraDugme k={k} />
                     </div>
                   ))}
                   {!ks.length && <div className="hy-soluk" style={{ fontSize: 12, padding: 8 }}>Kart yok</div>}
@@ -102,7 +110,10 @@ export default function Kartlar() {
                   <span className="hy-kartno">#{k.id}</span>
                   <span className="hy-etiket" style={{ background: s.renk + '22', color: s.renk }}>{s.ad}</span>
                 </div>
-                <h3>{k.musteri || 'İsimsiz müşteri'}</h3>
+                <div className="hy-satir" style={{ justifyContent: 'space-between', gap: 8 }}>
+                  <h3 style={{ flex: 1, minWidth: 0 }}>{k.musteri || 'İsimsiz müşteri'}</h3>
+                  <AraDugme k={k} />
+                </div>
                 <p>{k.tanim}</p>
                 {k.teslim_tarihi && <div className="hy-soluk" style={{ marginTop: 6 }}>Teslim: {k.teslim_tarihi.slice(0, 10).split('-').reverse().join('.')}</div>}
               </div>
