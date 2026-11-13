@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { IonApp, IonIcon, IonLabel, IonRouterOutlet, IonTabBar, IonTabButton, IonTabs, IonBadge, IonSpinner } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { albumsOutline, appsOutline, carOutline, notificationsOutline, personCircleOutline } from 'ionicons/icons';
+import { albumsOutline, appsOutline, carOutline, homeOutline, notificationsOutline } from 'ionicons/icons';
 import { App as CapApp } from '@capacitor/app';
-import { aktifOturum, cikisaAbone, cikisYap, oturumYukle } from './api/client';
+import { aktifOturum, cikisaAbone, oturumYukle } from './api/client';
 import { bildirimler } from './api/hy';
 import type { Oturum } from './api/types';
 import Giris from './pages/Giris';
@@ -16,6 +16,8 @@ import GorevDetay from './pages/GorevDetay';
 import Bildirimler from './pages/Bildirimler';
 import Profil from './pages/Profil';
 import Moduller from './pages/Moduller';
+import Ozet from './pages/Ozet';
+import ModulOzet from './pages/ModulOzet';
 import Fiyat from './pages/Fiyat';
 import Muhasebe from './pages/muhasebe/Muhasebe';
 import FaturaDetay from './pages/muhasebe/FaturaDetay';
@@ -62,12 +64,17 @@ export default function App() {
               <Route path="/fiyat" element={<Fiyat />} />
               <Route path="/muhasebe" element={<Muhasebe />} />
               <Route path="/muhasebe/fatura/:id" element={<FaturaDetay />} />
-              <Route path="/moduller" element={<Moduller onYenidenGiris={async () => { await cikisYap(); setOturum(null); }} />} />
+              <Route path="/ozet" element={<Ozet />} />
+              <Route path="/modul/:mod" element={<ModulOzet />} />
+              <Route path="/moduller" element={<Moduller />} />
               <Route path="/profil" element={<Profil oturum={aktifOturum()!} onCikis={() => setOturum(null)} />} />
-              <Route path="*" element={<Navigate to={sahaAcik && oturum.rol !== 'YONETICI' ? '/saha' : '/kartlar'} replace />} />
+              <Route path="*" element={<Navigate to={sahaAcik && oturum.rol !== 'YONETICI' ? '/saha' : '/ozet'} replace />} />
             </Routes>
           </IonRouterOutlet>
           <IonTabBar slot="bottom">
+            <IonTabButton tab="ozet" href="/ozet">
+              <IonIcon icon={homeOutline} /><IonLabel>Özet</IonLabel>
+            </IonTabButton>
             <IonTabButton tab="kartlar" href="/kartlar">
               <IonIcon icon={albumsOutline} /><IonLabel>Kartlar</IonLabel>
             </IonTabButton>
@@ -82,9 +89,6 @@ export default function App() {
             </IonTabButton>
             <IonTabButton tab="moduller" href="/moduller">
               <IonIcon icon={appsOutline} /><IonLabel>Menü</IonLabel>
-            </IonTabButton>
-            <IonTabButton tab="profil" href="/profil">
-              <IonIcon icon={personCircleOutline} /><IonLabel>Profil</IonLabel>
             </IonTabButton>
           </IonTabBar>
         </IonTabs>

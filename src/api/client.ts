@@ -29,7 +29,7 @@ async function oturumKaydet(o: Oturum | null) {
 
 /** Tüm HY isteklerinin tek kapısı. Token X-HY-Token başlığıyla gider.
  *  Uygulamada CapacitorHttp açık olduğundan fetch yerel HTTP'den geçer (CORS gerekmez). */
-export async function istek<T = any>(yol: string, secenek: { metot?: string; govde?: unknown; sorgu?: Record<string, string | number> } = {}): Promise<T> {
+export async function istek<T = any>(yol: string, secenek: { metot?: string; govde?: unknown; sorgu?: Record<string, string | number> } = {}, deneme = 0): Promise<T> {
   if (oturum?.demo) return demoIstek(yol, secenek) as Promise<T>;
   const url = new URL(SUNUCU + '/wp-json/' + yol.replace(/^\//, ''));
   Object.entries(secenek.sorgu || {}).forEach(([k, v]) => url.searchParams.set(k, String(v)));
@@ -50,6 +50,11 @@ export async function istek<T = any>(yol: string, secenek: { metot?: string; gov
   }
   let veri: any = null;
   try { veri = await yanit.json(); } catch { /* boş gövde */ }
+  // Sunucunun bot filtresi ara sıra GET'e JSON yerine HTML sayfa döndürüyor: bir kez daha dene.
+  if (veri === null && yanit.ok && secenek.govde === undefined && deneme < 2) {
+    await new Promise((r) => setTimeout(r, 1200));
+    return istek<T>(yol, secenek, deneme + 1);
+  }
   if (yanit.status === 401 && oturum) {
     await oturumKaydet(null);
     cikisDinleyici?.();
@@ -94,4 +99,5 @@ export async function girisYap(kadi: string, sifre: string, kod = ''): Promise<G
 export async function cikisYap() {
   try { if (oturum && !oturum.demo) await istek('hy-erp/v1/saha/cikis', { govde: {} }); } catch { /* yoksay */ }
   await oturumKaydet(null);
+  cikisDinleyici?.();
 }
