@@ -162,3 +162,5 @@
 .hy-pano-kart button { background: none; border: 0; color: var(--hy-soluk); font-size: 18px; padding: 2px; }
 .hy-ara-dugme { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 16px; background: #16a34a; color: #fff; font-size: 13px; font-weight: 700; text-decoration: none; }
 .hy-pano-kart .hy-ara-dugme { margin-top: 6px; padding: 4px 10px; font-size: 12px; }
+.hy-guncelle { display: flex; flex-direction: column; margin: 8px 12px; padding: 12px 14px; border-radius: 14px; background: #fef3c7; color: #78350f; text-decoration: none; }
+.hy-guncelle span { font-size: 12px; }

@@ -5,6 +5,8 @@ import {
 } from '@ionic/react';
 import { chatbubbleEllipsesOutline, chevronForwardOutline, mailOutline, personCircleOutline } from 'ionicons/icons';
 import { aktifOturum } from '../api/client';
+import { SUNUCU } from '../api/client';
+import { yeniSurum } from '../surum';
 import { anaOzet, kalinParcala, MODULLER, modulAcik, modulOzet, once, type AnaOzet, type ModulOzet } from '../api/ozet';
 
 function selam() {
@@ -34,7 +36,8 @@ export default function Ozet() {
     };
     await Promise.all([isci(), isci(), isci()]);
   }
-  useEffect(() => { yukle(); }, []);
+  const [guncel, setGuncel] = useState<string | null>(null);
+  useEffect(() => { yukle(); yeniSurum().then(setGuncel); }, []);
   useIonViewWillEnter(() => { if (ana) anaOzet().then(setAna).catch(() => {}); });
 
   const k = ana?.kartlar;
@@ -55,6 +58,12 @@ export default function Ozet() {
           <h2>{selam()} {o?.kullaniciAdi}</h2>
           <small className="hy-soluk">{new Date().toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' })}{o?.sirketAdi ? ' · ' + o.sirketAdi : ''}</small>
         </div>
+
+        {guncel && (
+          <a className="hy-guncelle" href={SUNUCU + '/uygulama/hesapla-yonet.apk'} target="_blank" rel="noreferrer">
+            <b>Yeni sürüm var: {guncel}</b><span>Dokunun, indirip üzerine kurun (silmenize gerek yok).</span>
+          </a>
+        )}
 
         {ana?.crm !== false && k && (
           <div className="hy-mo-kpis">

@@ -1,6 +1,7 @@
 import { IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonItem, IonLabel, IonList, IonNote, IonPage, IonTitle, IonToolbar } from '@ionic/react';
 import { cikisYap, SUNUCU } from '../api/client';
 import type { Oturum } from '../api/types';
+import { SURUM } from '../surum';
 
 export default function Profil({ oturum, onCikis }: { oturum: Oturum; onCikis: () => void }) {
   return (
@@ -21,7 +22,7 @@ export default function Profil({ oturum, onCikis }: { oturum: Oturum; onCikis: (
         </IonList>
         <div style={{ padding: 16 }}>
           <IonButton expand="block" color="danger" fill="outline" onClick={async () => { await cikisYap(); onCikis(); }}>Çıkış yap</IonButton>
-          <p className="hy-soluk" style={{ textAlign: 'center' }}>Hesapla Yönet · sürüm 0.6.1</p>
+          <p className="hy-soluk" style={{ textAlign: 'center' }}>Hesapla Yönet · sürüm {SURUM}</p>
         </div>
       </IonContent>
     </IonPage>
