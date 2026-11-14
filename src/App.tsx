@@ -20,6 +20,8 @@ import Bildirimler from './pages/Bildirimler';
 import Profil from './pages/Profil';
 import Moduller from './pages/Moduller';
 import Ozet from './pages/Ozet';
+import Takvim from './pages/Takvim';
+import IslemKaydi from './pages/IslemKaydi';
 import ModulOzet from './pages/ModulOzet';
 import Fiyat from './pages/Fiyat';
 import Muhasebe from './pages/muhasebe/Muhasebe';
@@ -71,6 +73,8 @@ export default function App() {
               <Route path="/muhasebe" element={<Muhasebe />} />
               <Route path="/muhasebe/fatura/:id" element={<FaturaDetay />} />
               <Route path="/ozet" element={<Ozet />} />
+              <Route path="/takvim" element={<Takvim />} />
+              <Route path="/islem-kaydi" element={<IslemKaydi />} />
               <Route path="/modul/:mod" element={<ModulOzet />} />
               <Route path="/moduller" element={<Moduller />} />
               <Route path="/profil" element={<Profil oturum={aktifOturum()!} onCikis={() => setOturum(null)} />} />

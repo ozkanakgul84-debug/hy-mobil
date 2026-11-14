@@ -1,11 +1,11 @@
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonPage, IonTitle, IonToolbar, useIonRouter } from '@ionic/react';
-import { calendarOutline, chevronForwardOutline, gridOutline, openOutline, personCircleOutline, settingsOutline } from 'ionicons/icons';
+import { listOutline, calendarOutline, chevronForwardOutline, gridOutline, openOutline, personCircleOutline, settingsOutline } from 'ionicons/icons';
 import { aktifOturum } from '../api/client';
 import { MODULLER, modulAcik } from '../api/ozet';
 import { usePanel } from '../panelKanca';
 
 /** Menü: web panelinin sol menüsüyle aynı sıra. Modüle dokununca özet sayfası açılır;
- *  Muhasebe'nin alt satırları (Perakende Satış, Günlük Harcamalar) panelde olduğu gibi altında durur. */
+ *  Muhasebe'nin alt satırları (Teklif Listesi, Perakende Satış, Günlük Harcamalar) panelde olduğu gibi altında durur. */
 export default function Moduller() {
   const router = useIonRouter();
   const panel = usePanel();
@@ -37,11 +37,18 @@ export default function Moduller() {
               ))}
             </div>
           ))}
-          <button className="hy-mo-modul" onClick={() => panel.ac(['#btntakvim'])}>
+          <button className="hy-mo-modul" onClick={() => router.push('/takvim')}>
             <IonIcon className="ik" icon={calendarOutline} />
-            <span className="m"><b>Takvim</b><small>Sitedeki takvim (panelde açılır)</small></span>
-            <IonIcon className="ok" icon={openOutline} />
+            <span className="m"><b>Takvim</b><small>Randevu, keşif, toplantı, montaj ve terminler</small></span>
+            <IonIcon className="ok" icon={chevronForwardOutline} />
           </button>
+          {o?.rol === 'YONETICI' && (
+            <button className="hy-mo-modul" onClick={() => router.push('/islem-kaydi')}>
+              <IonIcon className="ik" icon={listOutline} />
+              <span className="m"><b>İşlem Kayıtları</b><small>Kim, ne zaman, ne yaptı</small></span>
+              <IonIcon className="ok" icon={chevronForwardOutline} />
+            </button>
+          )}
           {o?.rol === 'YONETICI' && (
             <button className="hy-mo-modul" onClick={() => panel.ac(['#btnyonetici'])}>
               <IonIcon className="ik" icon={settingsOutline} />

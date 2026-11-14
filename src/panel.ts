@@ -9,7 +9,7 @@ export const PANEL_YOLU = '/erp-paneli/?kaynak=uygulama';
  *  sayfa JavaScript'i çalışmadan önce oraya yazarız, böylece ikinci kez giriş istenmez.
  *  Bir kez yazılır (hy_uyg_enjekte): panelde "Çıkış" yapılırsa geri yazmayız. */
 /** hedef: panel açılınca sırayla yapılacak adımlar: CSS seçici (tıklanır), 'kart:148' (CRM kartını açar),
- *  'metin:Teslim ekranı' (bu yazıyı taşıyan görünür düğmeye tıklar). Ör. ['#btnuretimhub', '#p-uretimhub .hm-kutu[data-i="1"]'].
+ *  'metin:Teslim ekranı' (bu yazıyı taşıyan görünür düğmeye tıklar), 'cagir:HYTasarim.ac:{"kart":148}' (panel fonksiyonu). Ör. ['#btnuretimhub', '#p-uretimhub .hm-kutu[data-i="1"]'].
  *  Modül özet sayfası araya girmesin diye panelin __hmoGec bayrağıyla tıklanır. Her açılışta bir kez çalışır. */
 export async function paneliAc(yol = PANEL_YOLU, hedef: string[] = []): Promise<'acildi' | 'paket_yok'> {
   const o = aktifOturum();
@@ -51,6 +51,14 @@ export async function paneliAc(yol = PANEL_YOLU, hedef: string[] = []): Promise<
           window.crmKartAc(k);
         }
         if(++i<h.length)setTimeout(adim,900);
+        return;
+      }
+      if(a.indexOf('cagir:')===0){ // 'cagir:HYTasarim.ac:{"kart":148}' → panel fonksiyonunu çağırır
+        var pr=a.slice(6).split(':'),yol=pr.shift().split('.'),arg=pr.join(':'),f=window,ust=null;
+        for(var j=0;j<yol.length&&f;j++){ust=f;f=f[yol[j]];}
+        if(typeof f!=='function')return setTimeout(adim,250);
+        try{f.call(ust,arg?JSON.parse(arg):undefined);}catch(e){}
+        if(++i<h.length)setTimeout(adim,350);
         return;
       }
       var el=null;

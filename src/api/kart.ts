@@ -109,3 +109,10 @@ export function boyutYaz(b: number) {
   if (b < 1024 * 1024) return Math.round(b / 1024) + ' KB';
   return (b / 1024 / 1024).toFixed(1).replace('.', ',') + ' MB';
 }
+
+/* ── Tasarım (hy-tasarim/v1): karta bağlı 2D/3D tasarım projeleri ── */
+export interface TasarimProje { id: number; ad: string; rev: number; kart_id?: number; tarih?: string; onizleme?: string }
+export async function kartTasarimlari(kartId: number): Promise<TasarimProje[]> {
+  const l = await istek<TasarimProje[]>('hy-tasarim/v1/projeler', { sorgu: { kart_id: kartId, son: 50 } });
+  return (Array.isArray(l) ? l : []).filter((p) => !p.kart_id || +p.kart_id === kartId);
+}

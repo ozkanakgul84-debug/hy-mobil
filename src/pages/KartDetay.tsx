@@ -7,7 +7,8 @@ import { aktifOturum } from '../api/client';
 import { islemAdimlari, sutun, sutunlar, surecAdimlari, type SurecAdimi } from '../api/sutun';
 import { adresEkle, ARSIV_SEBEPLERI, hizliIs, kartiArsivle, neredenGetir, neredenKaydet, siparisGetir, siparisLinkGonder, type Siparis } from '../api/kart';
 import { usePanel } from '../panelKanca';
-import { SahaBolumu, SesKaydi, TeklifBolumu } from './KartEkler';
+import { sesleYaz } from '../sesYazi';
+import { SahaBolumu, SesKaydi, TasarimBolumu, TeklifBolumu } from './KartEkler';
 import KartFormu from './KartFormu';
 import FaturaFormu, { type FaturaBaslangic } from './muhasebe/FaturaFormu';
 import { crmKartCariAc, crmKartFatura } from '../api/muhasebe';
@@ -49,6 +50,11 @@ export default function KartDetay() {
     neredenGetir(Number(id)).then(setNereden).catch(() => setNereden(null));
   }, [yukle]);
 
+  /** 🎤 Sesle yaz: konuşma yorum kutusuna eklenir. */
+  const sesle = async () => {
+    try { const m = await sesleYaz(); if (m) setYorum((y) => (y ? y + ' ' : '') + m); }
+    catch (e: any) { toast({ message: e.message || 'Ses anlaşılamadı', duration: 2500, color: 'danger' }); }
+  };
   const panelde = (...adim: string[]) => panel.ac([`kart:${id}`, ...adim]);
 
   /* ── Sipariş no / müşteriye takip linki / hızlı iş ── */
@@ -356,6 +362,7 @@ export default function KartDetay() {
               </>
             )}
 
+            {modulVar('teklif') && <TasarimBolumu kartId={kart.id} />}
             {modulVar('teklif') && <TeklifBolumu kartId={kart.id} />}
             <SahaBolumu kartId={kart.id} />
 
@@ -363,6 +370,7 @@ export default function KartDetay() {
             <div className="hy-kutu">
               <div className="hy-satir" style={{ alignItems: 'flex-end', marginBottom: 10 }}>
                 <IonTextarea autoGrow rows={1} placeholder="Not ekle…" value={yorum} onIonInput={(e) => setYorum(String(e.detail.value || ''))} style={{ flex: 1 }} aria-label="Not" />
+                <IonButton fill="clear" onClick={sesle} aria-label="Sesle yaz"><IonIcon icon={micOutline} /></IonButton>
                 <IonButton onClick={yorumGonder} disabled={gonderiliyor || !yorum.trim()} aria-label="Gönder"><IonIcon icon={sendOutline} /></IonButton>
               </div>
               <div className="hy-log">

@@ -4,7 +4,7 @@ import {
   IonSpinner, IonTextarea, IonTitle, IonToolbar, useIonToast,
 } from '@ionic/react';
 import { addOutline, closeOutline, micOutline, stopCircleOutline } from 'ionicons/icons';
-import { kartSahaGorevleri, kartTeklifleri, medyaYukle, sahaGoreviVer, type SahaGorevi, type SahaSecenek, type Teklif } from '../api/kart';
+import { kartTasarimlari, type TasarimProje, kartSahaGorevleri, kartTeklifleri, medyaYukle, sahaGoreviVer, type SahaGorevi, type SahaSecenek, type Teklif } from '../api/kart';
 import { usePanel } from '../panelKanca';
 
 const GOREV_RENK: Record<string, string> = { planlandi: 't-g', yolda: 't-a', sahada: 't-a', bitti: 't-y', iptal: 't-r' };
@@ -173,5 +173,28 @@ export function SesKaydi({ acik, kartId, onKapat, onYuklendi }: { acik: boolean;
         </div>
       </IonContent>
     </IonModal>
+  );
+}
+
+/** Karta bağlı 2D/3D tasarımlar (sitedeki "Tasarım ve Sunumlar"). Tasarım stüdyosu panelde açılır. */
+export function TasarimBolumu({ kartId }: { kartId: number }) {
+  const [liste, setListe] = useState<TasarimProje[] | null>(null);
+  const panel = usePanel();
+  useEffect(() => { kartTasarimlari(kartId).then(setListe).catch(() => setListe([])); }, [kartId]);
+  if (!liste) return null;
+  return (
+    <section className="hy-mo-panel">
+      <h3 style={{ justifyContent: 'space-between' }}>
+        <span>✏️ Tasarımlar</span>
+        <IonButton size="small" disabled={panel.aciliyor} onClick={() => panel.ac([`cagir:HYTasarim.ac:${JSON.stringify({ kart: kartId })}`])}><IonIcon slot="start" icon={addOutline} />Tasarım aç</IonButton>
+      </h3>
+      {!liste.length && <div className="hy-mo-bos">Bu karta bağlı tasarım yok.</div>}
+      {liste.map((p) => (
+        <button key={p.id} className="hy-mo-satir" onClick={() => panel.ac([`cagir:HYTasarim.ac:${JSON.stringify({ proje: String(p.id) })}`])}>
+          {p.onizleme ? <img src={p.onizleme} alt="" style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 8 }} /> : <span className="av" style={{ background: '#7c3aed' }}>✏️</span>}
+          <span className="m"><b>{p.ad}</b><small>Rev {p.rev}{p.tarih ? ' · ' + p.tarih : ''}</small></span>
+        </button>
+      ))}
+    </section>
   );
 }

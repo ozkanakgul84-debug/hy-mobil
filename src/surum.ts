@@ -1,6 +1,6 @@
 import { SUNUCU } from './api/client';
 
-export const SURUM = '0.6.2';
+export const SURUM = '0.7.0';
 
 function kucuk(a: string, b: string) {
   const x = a.split('.').map(Number), y = b.split('.').map(Number);
