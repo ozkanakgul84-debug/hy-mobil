@@ -11,12 +11,17 @@ import Giris from './pages/Giris';
 import Kartlar from './pages/Kartlar';
 import KartDetay from './pages/KartDetay';
 import WaYazisma from './pages/WaYazisma';
+import KartEposta from './pages/KartEposta';
+import KartYazisma from './pages/KartYazisma';
+import KartDosyalar from './pages/KartDosyalar';
 import Saha from './pages/Saha';
 import GorevDetay from './pages/GorevDetay';
 import Bildirimler from './pages/Bildirimler';
 import Profil from './pages/Profil';
 import Moduller from './pages/Moduller';
 import Ozet from './pages/Ozet';
+import Takvim from './pages/Takvim';
+import IslemKaydi from './pages/IslemKaydi';
 import ModulOzet from './pages/ModulOzet';
 import Fiyat from './pages/Fiyat';
 import Muhasebe from './pages/muhasebe/Muhasebe';
@@ -58,6 +63,9 @@ export default function App() {
               <Route path="/kartlar" element={<Kartlar />} />
               <Route path="/kartlar/:id" element={<KartDetay />} />
               <Route path="/kartlar/:id/whatsapp" element={<WaYazisma />} />
+              <Route path="/kartlar/:id/eposta" element={<KartEposta />} />
+              <Route path="/kartlar/:id/yazisma" element={<KartYazisma />} />
+              <Route path="/kartlar/:id/dosyalar" element={<KartDosyalar />} />
               <Route path="/saha" element={<Saha />} />
               <Route path="/saha/:id" element={<GorevDetay />} />
               <Route path="/bildirimler" element={<Bildirimler onSayac={setOkunmamis} />} />
@@ -65,6 +73,8 @@ export default function App() {
               <Route path="/muhasebe" element={<Muhasebe />} />
               <Route path="/muhasebe/fatura/:id" element={<FaturaDetay />} />
               <Route path="/ozet" element={<Ozet />} />
+              <Route path="/takvim" element={<Takvim />} />
+              <Route path="/islem-kaydi" element={<IslemKaydi />} />
               <Route path="/modul/:mod" element={<ModulOzet />} />
               <Route path="/moduller" element={<Moduller />} />
               <Route path="/profil" element={<Profil oturum={aktifOturum()!} onCikis={() => setOturum(null)} />} />

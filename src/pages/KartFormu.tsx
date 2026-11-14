@@ -1,5 +1,7 @@
+import { sesleYaz } from '../sesYazi';
+import { micOutline } from 'ionicons/icons';
 import { useState } from 'react';
-import { IonButton, IonButtons, IonContent, IonHeader, IonInput, IonItem, IonList, IonModal, IonSelect, IonSelectOption, IonTextarea, IonTitle, IonToolbar, useIonToast } from '@ionic/react';
+import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonItem, IonList, IonModal, IonSelect, IonSelectOption, IonTextarea, IonTitle, IonToolbar, useIonToast } from '@ionic/react';
 import { kartAc, kartGuncelle, kisiGuncelle } from '../api/hy';
 import type { Kart } from '../api/types';
 
@@ -69,7 +71,12 @@ export default function KartFormu({ acik, kart, onKapat, onKaydedildi }: {
               </IonSelect>
             </IonItem>
           )}
-          <IonItem><IonTextarea label="İş tanımı" labelPlacement="stacked" autoGrow rows={4} value={tanim} onIonInput={(e) => setTanim(String(e.detail.value || ''))} /></IonItem>
+          <IonItem>
+            <IonTextarea label="İş tanımı (sipariş detayları)" labelPlacement="stacked" autoGrow rows={4} value={tanim} onIonInput={(e) => setTanim(String(e.detail.value || ''))} />
+            <IonButton slot="end" fill="clear" aria-label="Sesle yaz" onClick={async () => {
+              try { const m = await sesleYaz(); if (m) setTanim((t) => (t ? t + ' ' : '') + m); } catch (e: any) { toast({ message: e.message || 'Ses anlaşılamadı', duration: 2500, color: 'danger' }); }
+            }}><IonIcon icon={micOutline} /></IonButton>
+          </IonItem>
         </IonList>
       </IonContent>
     </IonModal>

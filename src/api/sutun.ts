@@ -36,3 +36,18 @@ export function surecAdimlari(): SurecAdimi[] {
 export function sutun(id: string) {
   return sutunlar().find((x) => x.id === id) || { id, ad: id, renk: '#8a94a6' };
 }
+
+const ISLEM_AKSIYONLARI = ['faturaKes', 'adreseGit', 'kameraAc', 'sesliNot', 'klasorAc', 'fiyatHesapla', 'teklifHazirla', 'corelCek'];
+
+/** Kartın alt satırındaki işlem düğmeleri (web panelindeki gibi): fatura kes, adres, kamera, ses kaydı, klasörler, fiyat hesapla…
+ *  Hedef sütunu olan düğme önce kartı o sütuna taşır, sonra işlemi açar. */
+export function islemAdimlari(): SurecAdimi[] {
+  const o = aktifOturum();
+  const ia: any = o?.isAkisi || {};
+  const ham: any[] = ia.surecAdimlari || ia.surec_adimlari || [];
+  const yetki: any = (o as any)?.surecButonYetkileri;
+  const izin = (k: string) => o?.rol === 'YONETICI' || !yetki || yetki[k] === undefined || !!yetki[k];
+  return ham.map((a, i) => ({ ...a, etiket: (a.etiket || a.ad || a.key).trim(), sira: a.sira ?? i }))
+    .filter((a) => ISLEM_AKSIYONLARI.includes(a.aksiyon) && izin(a.key))
+    .sort((a, b) => (a.sira || 0) - (b.sira || 0));
+}
