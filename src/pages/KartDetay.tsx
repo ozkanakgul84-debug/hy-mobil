@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonPage, IonTitle, IonToolbar, IonSpinner, IonTextarea, IonRefresher, IonRefresherContent, useIonToast, useIonActionSheet, useIonAlert, useIonRouter } from '@ionic/react';
-import { callOutline, logoWhatsapp, cameraOutline, navigateOutline, sendOutline, createOutline, chevronDownOutline, checkmarkCircle, ellipseOutline, mailOutline, chatbubblesOutline, folderOpenOutline, ellipsisVertical, openOutline, archiveOutline, flashOutline, linkOutline, locationOutline, micOutline, receiptOutline, calculatorOutline, documentTextOutline, cubeOutline, pricetagOutline } from 'ionicons/icons';
+import { IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonModal, IonPage, IonTitle, IonToolbar, IonSpinner, IonTextarea, IonRefresher, IonRefresherContent, useIonToast, useIonActionSheet, useIonAlert, useIonRouter } from '@ionic/react';
+import { callOutline, logoWhatsapp, cameraOutline, navigateOutline, sendOutline, createOutline, chevronDownOutline, checkmarkCircle, ellipseOutline, mailOutline, chatbubblesOutline, folderOpenOutline, ellipsisVertical, openOutline, archiveOutline, flashOutline, linkOutline, locationOutline, micOutline, receiptOutline, calculatorOutline, documentTextOutline, cubeOutline, pricetagOutline, chevronForwardOutline, closeOutline, checkmarkDoneOutline, paperPlaneOutline as onayIkon, brushOutline, constructOutline } from 'ionicons/icons';
 import { adresMetni, fotoYukle, kartGetir, kartGuncelle, logCoz, logEkle, surecIsaretle } from '../api/hy';
 import { aktifOturum } from '../api/client';
 import { islemAdimlari, sutun, sutunlar, surecAdimlari, type SurecAdimi } from '../api/sutun';
@@ -40,6 +40,7 @@ export default function KartDetay() {
   const [siparis, setSiparis] = useState<Siparis | null>(null);
   const [nereden, setNereden] = useState<{ nereden: string; secenekler: string[] } | null>(null);
   const [ses, setSes] = useState(false);
+  const [pencere, setPencere] = useState<'' | 'surec' | 'islem'>('');
 
   const yukle = useCallback(async () => {
     try { setKart(await kartGetir(Number(id))); } catch (e: any) { setHata(e.message); }
@@ -151,10 +152,11 @@ export default function KartDetay() {
       case 'klasorAc': router.push(`/kartlar/${kart.id}/dosyalar`); break;
       case 'fiyatHesapla': router.push(`/fiyat?kart=${kart.id}`); break;
       case 'teklifHazirla': panelde('metin:Teklif Hazırla'); break;
+      case 'tasarimYap': panel.ac([`cagir:HYTasarim.ac:${JSON.stringify({ kart: kart.id })}`]); break;
       default: panelde('metin:' + a.etiket);
     }
   };
-  const ISLEM_IKON: Record<string, string> = { faturaKes: receiptOutline, adreseGit: locationOutline, kameraAc: cameraOutline, sesliNot: micOutline, klasorAc: folderOpenOutline, fiyatHesapla: calculatorOutline, teklifHazirla: documentTextOutline };
+  const ISLEM_IKON: Record<string, string> = { faturaKes: receiptOutline, adreseGit: locationOutline, kameraAc: cameraOutline, sesliNot: micOutline, klasorAc: folderOpenOutline, fiyatHesapla: calculatorOutline, teklifHazirla: documentTextOutline, onayaGonder: onayIkon, tasarimYap: brushOutline };
 
   const digerMenu = () => menu({
     header: '#' + id,
@@ -259,6 +261,17 @@ export default function KartDetay() {
 
   const s = kart ? sutun(kart.durum) : null;
   const adimlar = surecAdimlari();
+  const bitenler = kart ? adimlar.filter((a) => (kart.surecler || {})[a.key]) : [];
+  const bitenSayi = bitenler.length;
+  const sonAdim = bitenler[bitenler.length - 1];
+  const islemListesi: SurecAdimi[] = [
+    ...(islemAdimlari().length ? islemAdimlari() : [
+      { key: 'f', etiket: 'Fatura kes', aksiyon: 'faturaKes' }, { key: 'a', etiket: 'Adres', aksiyon: 'adreseGit' },
+      { key: 'k', etiket: 'Kamera', aksiyon: 'kameraAc' }, { key: 's', etiket: 'Ses kaydet', aksiyon: 'sesliNot' },
+      { key: 'd', etiket: 'Klasörler', aksiyon: 'klasorAc' }, { key: 'h', etiket: 'Fiyat hesapla', aksiyon: 'fiyatHesapla' },
+    ] as SurecAdimi[]),
+    ...(modulVar('teklif') && !islemAdimlari().some((x) => x.aksiyon === 'teklifHazirla') ? [{ key: 'tk', etiket: 'Teklif Hazırla', aksiyon: 'teklifHazirla' } as SurecAdimi] : []),
+  ];
   const adr = kart ? adresMetni(kart.adres_panosu) : { metin: '' };
 
   return (
@@ -308,36 +321,52 @@ export default function KartDetay() {
               <button onClick={() => panelde()}><IonIcon icon={openOutline} />Panelde</button>
             </div>
 
-            {adimlar.length > 0 && (
-              <>
-                <div className="hy-bolum">Süreç</div>
-                <div className="hy-surec">
-                  {adimlar.map((a) => {
-                    const ok = !!(kart.surecler || {})[a.key];
-                    return (
-                      <button key={a.key} className={'hy-surec-adim' + (ok ? ' ok' : '')} onClick={() => surecTikla(a)}>
-                        <IonIcon icon={ok ? checkmarkCircle : ellipseOutline} /> {a.etiket}
-                      </button>
-                    );
-                  })}
-                </div>
-              </>
-            )}
-
-            <div className="hy-bolum">İşlemler</div>
-            <div className="hy-islemler">
-              {(islemAdimlari().length ? islemAdimlari() : [
-                { key: 'f', etiket: 'Fatura kes', aksiyon: 'faturaKes' }, { key: 'a', etiket: 'Adres', aksiyon: 'adreseGit' },
-                { key: 'k', etiket: 'Kamera', aksiyon: 'kameraAc' }, { key: 's', etiket: 'Ses kaydet', aksiyon: 'sesliNot' },
-                { key: 'd', etiket: 'Klasörler', aksiyon: 'klasorAc' }, { key: 'h', etiket: 'Fiyat hesapla', aksiyon: 'fiyatHesapla' },
-              ] as SurecAdimi[]).map((a) => (
-                <button key={a.key} onClick={() => islemCalistir(a)}><IonIcon icon={ISLEM_IKON[a.aksiyon || ''] || cubeOutline} />{a.etiket}</button>
-              ))}
-              {modulVar('teklif') && <button onClick={() => islemCalistir({ key: 'tk', etiket: 'Teklif Hazırla', aksiyon: 'teklifHazirla' })}><IonIcon icon={documentTextOutline} />Teklif hazırla</button>}
-              <button onClick={() => panelde('metin:Teslim ekranı')}><IonIcon icon={cubeOutline} />Teslim ekranı</button>
-              <button onClick={() => panelde('metin:Etiket bas')}><IonIcon icon={pricetagOutline} />Etiket bas</button>
-              <button className="kirmizi" onClick={arsivle}><IonIcon icon={archiveOutline} />Arşivle</button>
+            <div className="hy-bolum">İşlem</div>
+            <div className="hy-islem-menu">
+              {adimlar.length > 0 && (
+                <button onClick={() => setPencere('surec')}>
+                  <span className="ik yesil"><IonIcon icon={checkmarkDoneOutline} /></span>
+                  <span className="m"><b>Süreç adımları</b><small>{sonAdim ? 'Son adım: ' + sonAdim.etiket : 'Henüz işaretlenmedi'} · {bitenSayi}/{adimlar.length}</small></span>
+                  <IonIcon className="ok" icon={chevronForwardOutline} />
+                </button>
+              )}
+              <button onClick={() => setPencere('islem')}>
+                <span className="ik"><IonIcon icon={constructOutline} /></span>
+                <span className="m"><b>İşlem butonları</b><small>{islemListesi.slice(0, 4).map((x) => x.etiket).join(', ')}{islemListesi.length > 4 ? ' +' + (islemListesi.length - 4) : ''}</small></span>
+                <IonIcon className="ok" icon={chevronForwardOutline} />
+              </button>
             </div>
+
+            {/* Süreç adımları: alttan açılan pencere; işaretlenen görülsün diye açık kalır */}
+            <IonModal className="hy-alt-pencere" isOpen={pencere === 'surec'} onDidDismiss={() => setPencere('')} initialBreakpoint={1} breakpoints={[0, 1]}>
+              <div className="hy-alt-bas"><b>✅ Süreç adımları</b><button aria-label="Kapat" onClick={() => setPencere('')}><IonIcon icon={closeOutline} /></button></div>
+              <div className="hy-alt-govde">
+                {adimlar.map((a) => {
+                  const ok = !!(kart.surecler || {})[a.key];
+                  return (
+                    <button key={a.key} className={'hy-surec-satir' + (ok ? ' ok' : '')} onClick={() => surecTikla(a)}>
+                      <IonIcon icon={ok ? checkmarkCircle : ellipseOutline} /><span>{a.etiket}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </IonModal>
+
+            {/* İşlem butonları: basınca pencere kapanır, iş açılır */}
+            <IonModal className="hy-alt-pencere" isOpen={pencere === 'islem'} onDidDismiss={() => setPencere('')} initialBreakpoint={1} breakpoints={[0, 1]}>
+              <div className="hy-alt-bas"><b>🧰 İşlem butonları</b><button aria-label="Kapat" onClick={() => setPencere('')}><IonIcon icon={closeOutline} /></button></div>
+              <div className="hy-alt-govde">
+                <div className="hy-islemler iki">
+                  {islemListesi.map((a) => (
+                    <button key={a.key} onClick={() => { setPencere(''); islemCalistir(a); }}><IonIcon icon={ISLEM_IKON[a.aksiyon || ''] || cubeOutline} />{a.etiket}</button>
+                  ))}
+                  <button onClick={() => { setPencere(''); panelde('metin:Teslim ekranı'); }}><IonIcon icon={cubeOutline} />Teslim ekranı</button>
+                  <button onClick={() => { setPencere(''); panelde('metin:Etiket bas'); }}><IonIcon icon={pricetagOutline} />Etiket bas</button>
+                </div>
+                <button className="hy-alt-genis kirmizi" onClick={() => { setPencere(''); arsivle(); }}><IonIcon icon={archiveOutline} />Arşivle</button>
+                <button className="hy-alt-genis" onClick={() => setPencere('')}>Kapat</button>
+              </div>
+            </IonModal>
 
             <div className="hy-bolum">İş tanımı</div>
             <div className="hy-kutu" style={{ whiteSpace: 'pre-wrap' }}>{kart.tanim || '—'}</div>
