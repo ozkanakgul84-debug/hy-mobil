@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { IonApp, IonIcon, IonLabel, IonRouterOutlet, IonTabBar, IonTabButton, IonTabs, IonBadge, IonSpinner } from '@ionic/react';
+import { IonApp, IonIcon, IonLabel, IonRouterOutlet, IonSplitPane, IonTabBar, IonTabButton, IonTabs, IonBadge, IonSpinner } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { albumsOutline, appsOutline, carOutline, homeOutline, notificationsOutline } from 'ionicons/icons';
@@ -27,6 +27,7 @@ import Fiyat from './pages/Fiyat';
 import Muhasebe from './pages/muhasebe/Muhasebe';
 import FaturaDetay from './pages/muhasebe/FaturaDetay';
 import { pushBaslat } from './push';
+import TabletMenu from './TabletMenu';
 
 export default function App() {
   const [hazir, setHazir] = useState(false);
@@ -57,6 +58,9 @@ export default function App() {
   return (
     <IonApp>
       <IonReactRouter>
+        <IonSplitPane contentId="ana" when="(min-width: 768px)">
+        <TabletMenu />
+        <div id="ana" className="ion-page">
         <IonTabs>
           <IonRouterOutlet>
             <Routes>
@@ -102,6 +106,8 @@ export default function App() {
             </IonTabButton>
           </IonTabBar>
         </IonTabs>
+        </div>
+        </IonSplitPane>
       </IonReactRouter>
     </IonApp>
   );
