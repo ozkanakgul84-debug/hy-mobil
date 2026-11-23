@@ -37,11 +37,38 @@ export async function waGetir(id: number, degisim = ''): Promise<WaYazisma> {
   return istek<WaYazisma>(`hy-erp/v1/crm/kartlar/${id}/whatsapp`, { sorgu: degisim ? { degisim } : {} });
 }
 
-export async function waGonder(id: number, mesaj: string, dosya?: { blob: Blob; ad: string }) {
+export async function waGonder(id: number, mesaj: string, dosya?: { blob: Blob; ad: string }, kime = '') {
   const fd = new FormData();
   if (mesaj) fd.append('mesaj', mesaj);
+  if (kime) fd.append('kime', kime);
   if (dosya) fd.append('dosya', dosya.blob, dosya.ad);
   return istek(`hy-erp/v1/crm/kartlar/${id}/whatsapp`, { govde: fd });
+}
+
+/** WhatsApp 📎 menüsü: firma (cari) bilgileri, banka hesapları, konum. Web paneliyle aynı uç. */
+export interface WaAtacBilgi { firma: { unvan?: string; vergi_no?: string; vergi_dairesi?: string; adres?: string; telefon?: string; email?: string; web?: string; konum?: string }; hesaplar: { ad?: string; banka?: string; iban?: string; doviz?: string; sahip?: string }[] }
+export const waAtacBilgi = () => istek<WaAtacBilgi>('hy-erp/v1/wa/atac-bilgi');
+
+/** Kartın ek numaraları ("Kime" seçimi). pencere: son 24 saatte yazdı mı. */
+export const waEkNumara = (id: number) => istek<{ numaralar: { telefon: string; ad?: string; pencere?: boolean }[]; ana_pencere?: boolean }>(`hy-erp/v1/crm/kartlar/${id}/ek-numara`);
+
+/** Panelin hy-wa-atac metin biçimleri. */
+export function cariMetni(f: WaAtacBilgi['firma']) {
+  const v = [f.vergi_dairesi, f.vergi_no].filter(Boolean).join(' / ');
+  return ['*Firma bilgilerimiz*', f.unvan && 'Ünvan: ' + f.unvan, v && 'Vergi dairesi / no: ' + v, f.adres && 'Adres: ' + f.adres, f.telefon && 'Telefon: ' + f.telefon, f.email && 'E-posta: ' + f.email].filter(Boolean).join('\n');
+}
+export function ibanMetni(b: WaAtacBilgi) {
+  const h = (b.hesaplar || []).filter((x) => x.iban);
+  if (!h.length) return '';
+  return '*Banka hesap bilgilerimiz*\n' + h.map((x) => [
+    'Hesap adı: ' + (x.sahip || x.ad || b.firma.unvan || ''),
+    'Banka: ' + (x.banka || '') + (x.doviz && x.doviz !== 'TL' ? ` (${x.doviz} hesabı)` : ''),
+    'IBAN: ' + x.iban,
+  ].join('\n')).join('\n\n');
+}
+export function konumMetni(f: WaAtacBilgi['firma']) {
+  const url = f.konum || 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent([f.unvan, f.adres].filter(Boolean).join(' '));
+  return ['📍 *Konumumuz*', f.unvan && '*' + f.unvan + '*', f.adres, url].filter(Boolean).join('\n');
 }
 
 export async function logEkle(id: number, metin: string) {

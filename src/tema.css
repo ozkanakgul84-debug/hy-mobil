@@ -187,3 +187,20 @@
 .hy-surec-satir ion-icon { font-size: 22px; color: var(--hy-soluk); flex: none; }
 .hy-surec-satir.ok { border-color: #2ecc71; background: rgba(46,204,113,.12); font-weight: 600; }
 .hy-surec-satir.ok ion-icon { color: #2ecc71; }
+.hy-wa-ek { font-size: 11px; font-weight: 600; opacity: .7; margin-bottom: 2px; }
+.hy-wa-kime { padding: 0 12px; border-bottom: 1px solid rgba(127,127,127,.2); }
+.hy-ikili-sekme { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 18px 12px 8px; padding: 4px; border-radius: 12px; background: rgba(127,127,127,.12); }
+.hy-ikili-sekme button { border: 0; background: transparent; color: inherit; padding: 9px 4px; border-radius: 9px; font-size: 14px; font-weight: 600; opacity: .7; }
+.hy-ikili-sekme button.secili { background: var(--hy-kart-bg); opacity: 1; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.hy-sd-kutu { cursor: pointer; }
+.hy-sd-ust { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px; }
+.hy-sd-durum { font-size: 12px; color: var(--hy-soluk); padding: 0 16px 6px; }
+.hy-sd-alan { --padding-start: 0; font-size: 16px; line-height: 1.5; min-height: 60vh; }
+.hy-oz-govde { min-height: 100%; display: flex; align-items: center; justify-content: center; }
+.hy-oz-resim { width: 100%; height: calc(100vh - 70px); overflow: auto; touch-action: pan-x pan-y pinch-zoom; display: flex; align-items: center; justify-content: center; }
+.hy-oz-resim img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.hy-oz-medya { width: 100%; max-height: calc(100vh - 80px); }
+.hy-oz-orta { display: flex; flex-direction: column; align-items: center; gap: 10px; color: #ddd; text-align: center; padding: 24px; }
+.hy-oz-metin { color: #eee; white-space: pre-wrap; font-size: 13px; padding: 12px; margin: 0; align-self: flex-start; width: 100%; }
+.hy-oz-ok { position: fixed; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; border: 0; background: rgba(0,0,0,.45); color: #fff; font-size: 22px; display: grid; place-items: center; }
+.hy-oz-ok.sol { left: 8px; } .hy-oz-ok.sag { right: 8px; } .hy-oz-ok:disabled { opacity: .25; }

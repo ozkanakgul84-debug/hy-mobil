@@ -10,6 +10,7 @@ import { usePanel } from '../panelKanca';
 import { sesleYaz } from '../sesYazi';
 import { SahaBolumu, SesKaydi, TasarimBolumu, TeklifBolumu } from './KartEkler';
 import KartFormu from './KartFormu';
+import SiparisDetay from './SiparisDetay';
 import FaturaFormu, { type FaturaBaslangic } from './muhasebe/FaturaFormu';
 import { crmKartCariAc, crmKartFatura } from '../api/muhasebe';
 import type { Kart } from '../api/types';
@@ -41,6 +42,8 @@ export default function KartDetay() {
   const [nereden, setNereden] = useState<{ nereden: string; secenekler: string[] } | null>(null);
   const [ses, setSes] = useState(false);
   const [pencere, setPencere] = useState<'' | 'surec' | 'islem'>('');
+  const [sekme, setSekme] = useState<'' | 'siparis' | 'log'>('');
+  const [sdAcik, setSdAcik] = useState(false);
 
   const yukle = useCallback(async () => {
     try { setKart(await kartGetir(Number(id))); } catch (e: any) { setHata(e.message); }
@@ -273,6 +276,27 @@ export default function KartDetay() {
     ...(modulVar('teklif') && !islemAdimlari().some((x) => x.aksiyon === 'teklifHazirla') ? [{ key: 'tk', etiket: 'Teklif Hazırla', aksiyon: 'teklifHazirla' } as SurecAdimi] : []),
   ];
   const adr = kart ? adresMetni(kart.adres_panosu) : { metin: '' };
+  const aktifSekme = sekme || (/whatsapp|wa|e-?posta|mail/i.test(kart?.kaynak || '') ? 'log' : 'siparis');
+  const logBolumu = kart && (
+            <>
+                        <div className="hy-kutu">
+              <div className="hy-satir" style={{ alignItems: 'flex-end', marginBottom: 10 }}>
+                <IonTextarea autoGrow rows={1} placeholder="Not ekle…" value={yorum} onIonInput={(e) => setYorum(String(e.detail.value || ''))} style={{ flex: 1 }} aria-label="Not" />
+                <IonButton fill="clear" onClick={sesle} aria-label="Sesle yaz"><IonIcon icon={micOutline} /></IonButton>
+                <IonButton onClick={yorumGonder} disabled={gonderiliyor || !yorum.trim()} aria-label="Gönder"><IonIcon icon={sendOutline} /></IonButton>
+              </div>
+              <div className="hy-log">
+                {logCoz(kart.log_metni).map((l, i) => (
+                  <div className="s" key={i}>
+                    {l.zaman && <div className="hy-soluk">{l.zaman}</div>}
+                    <div>{l.metin}</div>
+                    {l.foto && <img src={l.foto} alt="" loading="lazy" />}
+                  </div>
+                ))}
+              </div>
+            </div>
+            </>
+  );
 
   return (
     <IonPage>
@@ -368,8 +392,17 @@ export default function KartDetay() {
               </div>
             </IonModal>
 
-            <div className="hy-bolum">İş tanımı</div>
-            <div className="hy-kutu" style={{ whiteSpace: 'pre-wrap' }}>{kart.tanim || '—'}</div>
+            {/* Web paneldeki gibi iki ayrı sekme: Sipariş Detayı · Log & Yorumlar. WhatsApp/e-posta kaynaklı kart Log’da açılır. */}
+            <div className="hy-ikili-sekme">
+              <button className={aktifSekme === 'siparis' ? 'secili' : ''} onClick={() => setSekme('siparis')}>📋 Sipariş Detayı</button>
+              <button className={aktifSekme === 'log' ? 'secili' : ''} onClick={() => setSekme('log')}>📝 Log & Yorumlar</button>
+            </div>
+            {aktifSekme === 'siparis' ? (
+              <div className="hy-kutu hy-sd-kutu" onClick={() => setSdAcik(true)}>
+                <div className="hy-sd-ust"><span className="hy-soluk">Dokunun, tam ekran düzenleyin</span><span>⛶</span></div>
+                <div style={{ whiteSpace: 'pre-wrap' }}>{kart.tanim || 'Sipariş detayı yok. Yazmak için dokunun.'}</div>
+              </div>
+            ) : logBolumu}
 
             {adr.metin && (
               <>
@@ -395,28 +428,12 @@ export default function KartDetay() {
             {modulVar('teklif') && <TeklifBolumu kartId={kart.id} />}
             <SahaBolumu kartId={kart.id} />
 
-            <div className="hy-bolum">Kart geçmişi</div>
-            <div className="hy-kutu">
-              <div className="hy-satir" style={{ alignItems: 'flex-end', marginBottom: 10 }}>
-                <IonTextarea autoGrow rows={1} placeholder="Not ekle…" value={yorum} onIonInput={(e) => setYorum(String(e.detail.value || ''))} style={{ flex: 1 }} aria-label="Not" />
-                <IonButton fill="clear" onClick={sesle} aria-label="Sesle yaz"><IonIcon icon={micOutline} /></IonButton>
-                <IonButton onClick={yorumGonder} disabled={gonderiliyor || !yorum.trim()} aria-label="Gönder"><IonIcon icon={sendOutline} /></IonButton>
-              </div>
-              <div className="hy-log">
-                {logCoz(kart.log_metni).map((l, i) => (
-                  <div className="s" key={i}>
-                    {l.zaman && <div className="hy-soluk">{l.zaman}</div>}
-                    <div>{l.metin}</div>
-                    {l.foto && <img src={l.foto} alt="" loading="lazy" />}
-                  </div>
-                ))}
-              </div>
-            </div>
             <div style={{ height: 24 }} />
           </>
         )}
         <FaturaFormu acik={!!fatura} baslangic={fatura} onKapat={() => setFatura(null)} onKaydedildi={(fid) => { setFatura(null); router.push(`/muhasebe/fatura/${fid}`); }} />
         <SesKaydi acik={ses} kartId={Number(id)} onKapat={() => setSes(false)} onYuklendi={() => { setSes(false); yukle(); }} />
+        {kart && <SiparisDetay acik={sdAcik} kartId={kart.id} deger={kart.tanim || ''} onKapat={() => setSdAcik(false)} onDegisti={(t) => setKart((k) => k && { ...k, tanim: t })} />}
         <KartFormu acik={duzenle} kart={kart} onKapat={() => setDuzenle(false)} onKaydedildi={() => { setDuzenle(false); yukle(); }} />
       </IonContent>
     </IonPage>

@@ -4,10 +4,11 @@ import {
   IonBackButton, IonButton, IonButtons, IonContent, IonFab, IonFabButton, IonHeader, IonIcon, IonInput, IonItem, IonList,
   IonModal, IonPage, IonRefresher, IonRefresherContent, IonSelect, IonSelectOption, IonSpinner, IonTextarea, IonTitle, IonToolbar, useIonToast,
 } from '@ionic/react';
-import { arrowUndoOutline, attachOutline, closeOutline, createOutline, documentOutline, mailOutline, sendOutline } from 'ionicons/icons';
+import { arrowUndoOutline, attachOutline, closeOutline, createOutline, documentOutline, folderOpenOutline, mailOutline, sendOutline } from 'ionicons/icons';
+import { KartDosyaSecici } from './DosyaOnizle';
 import { kartGetir } from '../api/hy';
 import type { Kart } from '../api/types';
-import { boyutYaz, epostaGetir, epostaGonder, epostaHesaplari, hesapImzasi, kartEpostalari, type EpHesap, type EpMesaj, type EpMesajTam } from '../api/kart';
+import { boyutYaz, dosyaBlob, epostaGetir, epostaGonder, epostaHesaplari, hesapImzasi, kartEpostalari, type EpHesap, type EpMesaj, type EpMesajTam } from '../api/kart';
 import { once } from '../api/ozet';
 
 function dosyaAc(url: string) { window.open(url, '_blank'); }
@@ -111,6 +112,8 @@ function EpostaYaz({ kartId, taslak, onKapat, onGitti }: { kartId: number; tasla
   const [konu, setKonu] = useState('');
   const [metin, setMetin] = useState('');
   const [ekler, setEkler] = useState<File[]>([]);
+  const [karttan, setKarttan] = useState(false);
+  const [karttanYukleniyor, setKarttanYukleniyor] = useState(false);
   const [imza, setImza] = useState(true);
   const [gidiyor, setGidiyor] = useState(false);
   const dosyaGirdi = useRef<HTMLInputElement>(null);
@@ -155,10 +158,20 @@ function EpostaYaz({ kartId, taslak, onKapat, onGitti }: { kartId: number; tasla
         </IonList>
         <div style={{ padding: '4px 14px', display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
           <IonButton size="small" fill="outline" onClick={() => dosyaGirdi.current?.click()}><IonIcon slot="start" icon={attachOutline} />Dosya ekle</IonButton>
+          <IonButton size="small" fill="outline" disabled={karttanYukleniyor} onClick={() => setKarttan(true)}><IonIcon slot="start" icon={folderOpenOutline} />{karttanYukleniyor ? 'Getiriliyor…' : 'Karttan ekle'}</IonButton>
           <label style={{ fontSize: 13 }}><input type="checkbox" checked={imza} onChange={(e) => setImza(e.target.checked)} /> İmza ekle</label>
           {ekler.map((f, i) => (
             <span key={i} className="hy-etiket" onClick={() => setEkler(ekler.filter((_, j) => j !== i))}>{f.name} ✕</span>
           ))}
+          <KartDosyaSecici acik={karttan} kartId={kartId} onKapat={() => setKarttan(false)} onSec={async (sec) => {
+            setKarttan(false); setKarttanYukleniyor(true);
+            try {
+              const yeni: File[] = [];
+              for (const d of sec) yeni.push(new File([await dosyaBlob(d)], d.ad, { type: d.mime || undefined }));
+              setEkler((x) => [...x, ...yeni]);
+            } catch (e: any) { toast({ message: 'Dosya eklenemedi: ' + e.message, duration: 3000, color: 'danger' }); }
+            finally { setKarttanYukleniyor(false); }
+          }} />
           <input ref={dosyaGirdi} type="file" multiple hidden onChange={(e) => { setEkler([...ekler, ...Array.from(e.target.files || [])]); e.target.value = ''; }} />
         </div>
       </IonContent>

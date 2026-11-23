@@ -60,6 +60,43 @@ export interface KartDosya { id: number; ad: string; alt_klasor: string; alt_yol
 export const kartDosyalari = (kartId: number) =>
   istek<{ klasor: string; alt_klasorler: string[]; dosyalar: KartDosya[]; yerel_uygulama?: { bagli?: boolean } }>(`hy-erp/v1/arsiv/kart/${kartId}`);
 
+/** Ofisteki (yalnız yerel arşivde duran) dosyayı sunucuya getirtir; hazır olana kadar bekler (panelle aynı, en çok 90 sn). */
+export async function dosyaGetir(id: number): Promise<{ url?: string; indir_url?: string }> {
+  const bas = Date.now();
+  for (;;) {
+    const r = await istek<any>(`hy-erp/v1/arsiv/getir/${id}`, { govde: {} });
+    if (r?.hazir) return r;
+    if (Date.now() - bas > 90000) throw new Error(r?.mesaj || 'Ofisteki bilgisayar cevap vermedi');
+    await new Promise((c) => setTimeout(c, 2500));
+  }
+}
+/** Dosyanın açılabilir adresi: sunucudaysa hemen, ofisteyse önce getirir. */
+export async function dosyaUrl(d: KartDosya): Promise<string> {
+  const u = d.url || d.indir_url;
+  if (u && !d.uzak) return u;
+  const r = await dosyaGetir(d.id);
+  return r.url || r.indir_url || u || '';
+}
+export async function dosyaBlob(d: KartDosya): Promise<Blob> {
+  const r = await fetch(await dosyaUrl(d));
+  if (!r.ok) throw new Error('Dosya indirilemedi (' + r.status + ')');
+  return r.blob();
+}
+/** Arşivden siler (sunucu _Çöp klasörüne taşır, 30 gün sonra kalıcı silinir). Yalnız yönetici. */
+export const dosyaSil = (id: number) => istek<any>(`hy-erp/v1/arsiv/dosya/${id}`, { metot: 'DELETE' });
+/** Kart klasörüne dosya yükler (panelin kaydetHedef'i ile aynı alanlar). */
+export function dosyaYukle(kartId: number, alt: string, dosyalar: { blob: Blob; ad: string }[]) {
+  const fd = new FormData();
+  fd.append('kart_id', String(kartId));
+  fd.append('alt_klasor', alt);
+  dosyalar.forEach((d) => fd.append('dosya[]', d.blob, d.ad));
+  return istek<any>('hy-erp/v1/arsiv/yukle', { govde: fd });
+}
+export const resimMi = (ad: string) => /\.(jpe?g|png|webp|gif|bmp|svg)$/i.test(ad);
+export const videoMu = (ad: string) => /\.(mp4|webm|mov|m4v|3gp)$/i.test(ad);
+export const sesMi = (ad: string) => /\.(mp3|m4a|ogg|opus|wav|aac|webm)$/i.test(ad) && !videoMu(ad);
+export const metinMi = (ad: string) => /\.(txt|csv|log|json)$/i.test(ad);
+
 /* ── Sipariş no, müşteriye takip linki, hızlı iş (hy-siparis/v1) ── */
 export interface Siparis { aktif: boolean; siparis: null | { no: string; hizli: number; link?: string; wa?: string; eposta?: string; son_gonderim?: string | null; gonderim?: number }; no?: string }
 export const siparisGetir = (kartId: number) => istek<Siparis>(`hy-siparis/v1/kart/${kartId}`);

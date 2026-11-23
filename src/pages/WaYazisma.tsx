@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { IonBackButton, IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonIcon, IonPage, IonSpinner, IonTextarea, IonTitle, IonToolbar, useIonActionSheet, useIonToast } from '@ionic/react';
-import { attachOutline, cameraOutline, documentOutline, sendOutline } from 'ionicons/icons';
-import { kartGetir, waGetir, waGonder } from '../api/hy';
+import { IonBackButton, IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonIcon, IonPage, IonSelect, IonSelectOption, IonSpinner, IonTextarea, IonTitle, IonToolbar, useIonActionSheet, useIonToast } from '@ionic/react';
+import { attachOutline, businessOutline, cameraOutline, cardOutline, documentOutline, locationOutline, sendOutline, videocamOutline } from 'ionicons/icons';
+import { cariMetni, ibanMetni, kartGetir, konumMetni, waAtacBilgi, waEkNumara, waGetir, waGonder } from '../api/hy';
+import { aktifOturum } from '../api/client';
 import type { Kart, WaMesaj } from '../api/types';
 import { fotoCek } from '../foto';
 
@@ -35,6 +36,10 @@ export default function WaYazisma() {
   const degisim = useRef('');
   const icerik = useRef<HTMLIonContentElement>(null);
   const dosyaGirdi = useRef<HTMLInputElement>(null);
+  const videoGirdi = useRef<HTMLInputElement>(null);
+  const [ekler, setEkler] = useState<{ numaralar: { telefon: string; ad?: string; pencere?: boolean }[]; ana_pencere?: boolean } | null>(null);
+  const [kime, setKime] = useState('');
+  const telGor = (aktifOturum()?.kartGorusYetkileri as any)?.iletisimGorebilir !== false;
   const [toast] = useIonToast();
   const [menu] = useIonActionSheet();
 
@@ -56,6 +61,7 @@ export default function WaYazisma() {
 
   useEffect(() => {
     kartGetir(kartId).then(setKart).catch(() => {});
+    waEkNumara(kartId).then(setEkler).catch(() => setEkler(null));
     yukle(true);
     const t = setInterval(() => yukle(), 10000);
     return () => clearInterval(t);
@@ -69,7 +75,7 @@ export default function WaYazisma() {
     if (!m && !dosya) return;
     setGonderiliyor(true);
     try {
-      await waGonder(kartId, m, dosya);
+      await waGonder(kartId, m, dosya, kime);
       setMetin('');
       await yukle();
     } catch (e: any) {
@@ -77,11 +83,24 @@ export default function WaYazisma() {
     } finally { setGonderiliyor(false); }
   };
 
+  /* 📎 menüsü: web panelindeki hy-wa-atac ile aynı seçenekler. Cari/IBAN/konum metni kutuya yazılır, kontrol edip gönderirsiniz. */
+  const metneYaz = async (tur: 'cari' | 'iban' | 'konum') => {
+    try {
+      const b = await waAtacBilgi();
+      const t = tur === 'cari' ? cariMetni(b.firma) : tur === 'iban' ? ibanMetni(b) : konumMetni(b.firma);
+      if (!t) { toast({ message: 'Firma Bilgileri’nde banka hesabı yok (panel › Modül Ayarları).', duration: 3000 }); return; }
+      setMetin((x) => (x.trim() ? x.trim() + '\n\n' : '') + t);
+    } catch (e: any) { toast({ message: e.message, duration: 3000, color: 'danger' }); }
+  };
   const ekle = () => menu({
     header: 'Gönder',
     buttons: [
       { text: 'Fotoğraf çek', icon: cameraOutline, handler: () => { fotoGonder(); } },
-      { text: 'Dosya seç (PDF, görsel…)', icon: documentOutline, handler: () => { dosyaGirdi.current?.click(); } },
+      { text: 'Video yolla (en çok 16 MB)', icon: videocamOutline, handler: () => { videoGirdi.current?.click(); } },
+      { text: 'Dosya yolla', icon: documentOutline, handler: () => { dosyaGirdi.current?.click(); } },
+      { text: 'Cari bilgilerimiz', icon: businessOutline, handler: () => { metneYaz('cari'); } },
+      { text: 'IBAN yolla', icon: cardOutline, handler: () => { metneYaz('iban'); } },
+      { text: 'Konum gönder', icon: locationOutline, handler: () => { metneYaz('konum'); } },
       { text: 'Vazgeç', role: 'cancel' },
     ],
   });
@@ -111,6 +130,7 @@ export default function WaYazisma() {
               {m.medya?.url && (/\.(jpe?g|png|webp|gif)(\?|$)/i.test(m.medya.ad || m.medya.url) || m.tip === 'image' || m.tip === 'sticker'
                 ? <a href={m.medya.url} target="_blank" rel="noreferrer"><img src={m.medya.url} alt="" loading="lazy" /></a>
                 : <a className="hy-wa-dosya" href={m.medya.url} target="_blank" rel="noreferrer"><IonIcon icon={documentOutline} /> {m.medya.ad || m.tip}</a>)}
+              {m.ekstra?.tel && <div className="hy-wa-ek">📱 {[m.ekstra.tel_ad, telGor ? m.ekstra.tel : ''].filter(Boolean).join(' · ') || 'Ek numara'}</div>}
               {m.metin && <div className="hy-wa-metin">{m.metin}</div>}
               <div className="hy-wa-alt">
                 {m.yon === 'giden' && m.gonderen ? m.gonderen + ' · ' : ''}{saat(m.tarih)}
@@ -121,6 +141,21 @@ export default function WaYazisma() {
         </div>
       </IonContent>
       <IonFooter>
+        {!!ekler?.numaralar?.length && (() => {
+          const sec = kime === 'ana' ? { pencere: ekler.ana_pencere } : ekler.numaralar.find((n) => n.telefon === kime);
+          return (
+            <div className="hy-wa-kime">
+              <IonSelect label="👤 Kime" labelPlacement="start" interface="action-sheet" value={kime} onIonChange={(e) => setKime(String(e.detail.value || ''))}>
+                <IonSelectOption value="">Otomatik (son yazan numara)</IonSelectOption>
+                <IonSelectOption value="ana">Ana numara{telGor && kart?.telefon ? ' · ' + kart.telefon : ''} ({ekler.ana_pencere ? '24 sa. açık' : 'yalnız şablon'})</IonSelectOption>
+                {ekler.numaralar.map((n) => (
+                  <IonSelectOption key={n.telefon} value={n.telefon}>{[n.ad, telGor ? n.telefon : ''].filter(Boolean).join(' · ') || 'Ek numara'} ({n.pencere ? '24 sa. açık' : 'yalnız şablon'})</IonSelectOption>
+                ))}
+              </IonSelect>
+              {kime && sec && !sec.pencere && <div className="hy-wa-uyari">Bu numara son 24 saatte yazmadı: serbest mesaj gitmez, panelden şablonla başlatın.</div>}
+            </div>
+          );
+        })()}
         {!pencereAcik && sonGelen && (
           <div className="hy-wa-uyari">Müşterinin son mesajından 24 saat geçti. WhatsApp serbest mesaja izin vermiyor; müşteri yazınca yeniden açılır.</div>
         )}
@@ -133,6 +168,12 @@ export default function WaYazisma() {
             </IonButton>
           </div>
         </IonToolbar>
+        <input ref={videoGirdi} type="file" accept="video/*" hidden onChange={(e) => {
+          const f = e.target.files?.[0]; e.target.value = '';
+          if (!f) return;
+          if (f.size > 16 * 1024 * 1024) { toast({ message: 'Video 16 MB’tan büyük; WhatsApp kabul etmiyor.', duration: 3500, color: 'warning' }); return; }
+          gonder({ blob: f, ad: f.name });
+        }} />
         <input ref={dosyaGirdi} type="file" hidden onChange={(e) => {
           const f = e.target.files?.[0]; e.target.value = '';
           if (f) gonder({ blob: f, ad: f.name });
