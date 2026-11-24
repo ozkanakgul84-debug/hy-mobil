@@ -3,10 +3,10 @@ import { useLocation } from 'react-router-dom';
 import { IonBackButton, IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonList, IonListHeader, IonModal, IonPage, IonSearchbar, IonSegment, IonSegmentButton, IonSelect, IonSelectOption, IonSpinner, IonTitle, IonToolbar, useIonAlert, useIonToast } from '@ionic/react';
 import { addOutline, chevronForwardOutline, trashOutline } from 'ionicons/icons';
 import {
-  MUSTERI_TIPLERI, fiyatYetki, kabartmaHesapla, kartSepeti, malzemeler as malzemeGetir, sepetiKaydet, tl, urunler as urunGetir, zeminHesapla,
+  KATEGORI_TIP, MUSTERI_TIPLERI, fiyatYetki, kabartmaHesapla, kartSepeti, malzemeler as malzemeGetir, sepetiKaydet, tl, urunler as urunGetir, zeminHesapla,
   type FiyatYetki, type KabartmaSatir, type KabartmaSonuc, type Malzeme, type SepetKalem, type Urun, type ZeminParca, type ZeminSonuc,
 } from '../api/fiyat';
-import { kartGetir, kartlariGetir } from '../api/hy';
+import { kartGetir, kartKategorisi, kartlariGetir } from '../api/hy';
 import type { Kart } from '../api/types';
 
 const bosKabartma = (): KabartmaSatir => ({ malzeme: '', en: '', boy: '', plaka: '1', kesimTeknik: 'lazer' });
@@ -50,6 +50,11 @@ export default function Fiyat() {
     urunGetir().then((u) => { const k = u.filter((x) => /kabartma/i.test(x.modul || '')); setUrunListe(k); if (k[0]) setUrunKodu((v) => v || k[0].urun_kodu); }).catch(() => {});
     if (kartParam) kartGetir(kartParam).then(setKart).catch(() => {});
   }, [kartParam]);
+  // Karta bağlı müşterinin kategorisi varsa müşteri tipi kendiliğinden seçilir (web ile aynı)
+  useEffect(() => {
+    if (!kart) return;
+    kartKategorisi(kart.id).then((r) => { const t = KATEGORI_TIP[r.kategori || '']; if (t) setTip(t); }).catch(() => {});
+  }, [kart?.id]);
 
   // Girdi değişince sunucuda yeniden hesapla (gecikmeli)
   useEffect(() => {

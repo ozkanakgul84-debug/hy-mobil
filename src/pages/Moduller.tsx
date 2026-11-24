@@ -1,5 +1,5 @@
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonPage, IonTitle, IonToolbar, useIonRouter } from '@ionic/react';
-import { listOutline, calendarOutline, chevronForwardOutline, gridOutline, openOutline, personCircleOutline, settingsOutline } from 'ionicons/icons';
+import { barChartOutline, listOutline, calendarOutline, chevronForwardOutline, gridOutline, openOutline, personCircleOutline, settingsOutline } from 'ionicons/icons';
 import { aktifOturum } from '../api/client';
 import { MODULLER, modulAcik } from '../api/ozet';
 import { usePanel } from '../panelKanca';
@@ -49,6 +49,11 @@ export default function Moduller() {
               <IonIcon className="ok" icon={chevronForwardOutline} />
             </button>
           )}
+          <button className="hy-mo-modul" onClick={() => panel.ac(['cagir:HYRapor.ac'])}>
+            <IonIcon className="ik" icon={barChartOutline} />
+            <span className="m"><b>Raporlar</b><small>Genel işlemler › modül raporları ve grafikler (panelde açılır)</small></span>
+            <IonIcon className="ok" icon={openOutline} />
+          </button>
           {o?.rol === 'YONETICI' && (
             <button className="hy-mo-modul" onClick={() => panel.ac(['#btnyonetici'])}>
               <IonIcon className="ik" icon={settingsOutline} />

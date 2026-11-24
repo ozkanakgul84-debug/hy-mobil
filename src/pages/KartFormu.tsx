@@ -2,7 +2,7 @@ import { sesleYaz } from '../sesYazi';
 import { micOutline } from 'ionicons/icons';
 import { useState } from 'react';
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonItem, IonList, IonModal, IonSelect, IonSelectOption, IonTextarea, IonTitle, IonToolbar, useIonToast } from '@ionic/react';
-import { kartAc, kartGuncelle, kisiGuncelle } from '../api/hy';
+import { kartAc, kartGuncelle, kisiGuncelle, MUSTERI_KATEGORILERI } from '../api/hy';
 import type { Kart } from '../api/types';
 
 const KAYNAKLAR: [string, string][] = [['PERSONEL', 'Elle – Personel'], ['TELEFON', 'Telefon'], ['WHATSAPP', 'WhatsApp'], ['WEB', 'Web sitesi']];
@@ -16,12 +16,13 @@ export default function KartFormu({ acik, kart, onKapat, onKaydedildi }: {
   const [email, setEmail] = useState(kart?.email || '');
   const [tanim, setTanim] = useState(kart?.tanim || '');
   const [kaynak, setKaynak] = useState('PERSONEL');
+  const [kategori, setKategori] = useState('');
   const [kaydediliyor, setKaydediliyor] = useState(false);
   const [toast] = useIonToast();
 
   const sifirla = () => {
     setMusteri(kart?.musteri || ''); setTelefon(kart?.telefon || ''); setEmail(kart?.email || '');
-    setTanim(kart?.tanim || ''); setKaynak('PERSONEL');
+    setTanim(kart?.tanim || ''); setKaynak('PERSONEL'); setKategori('');
   };
 
   const kaydet = async () => {
@@ -42,7 +43,7 @@ export default function KartFormu({ acik, kart, onKapat, onKaydedildi }: {
         if (tanim !== (kart.tanim || '')) await kartGuncelle(kart.id, { tanim });
         onKaydedildi(kart.id);
       } else {
-        onKaydedildi(await kartAc({ musteri: musteri.trim(), telefon: tel, email: email.trim(), kaynak, tanim }));
+        onKaydedildi(await kartAc({ musteri: musteri.trim(), telefon: tel, email: email.trim(), kaynak, tanim, ...(kategori ? { musteri_kategori: kategori } : {}) }));
       }
       toast({ message: kart ? 'Kart güncellendi' : 'Kart açıldı', duration: 1800, color: 'success' });
     } catch (e: any) {
@@ -64,6 +65,16 @@ export default function KartFormu({ acik, kart, onKapat, onKaydedildi }: {
           <IonItem><IonInput label="Müşteri / firma" labelPlacement="stacked" value={musteri} onIonInput={(e) => setMusteri(String(e.detail.value || ''))} autocapitalize="words" /></IonItem>
           <IonItem><IonInput label="Telefon" labelPlacement="stacked" type="tel" inputmode="tel" value={telefon} onIonInput={(e) => setTelefon(String(e.detail.value || ''))} /></IonItem>
           <IonItem><IonInput label="E-posta" labelPlacement="stacked" type="email" inputmode="email" value={email} onIonInput={(e) => setEmail(String(e.detail.value || ''))} /></IonItem>
+          {!kart && (
+            <div className="hy-kategori">
+              <div className="hy-soluk">Müşteri kategorisi</div>
+              <div className="hy-cipler">
+                {MUSTERI_KATEGORILERI.map(([k, ad]) => (
+                  <button key={k} type="button" className={'hy-cip' + (kategori === k ? ' secili' : '')} onClick={() => setKategori(kategori === k ? '' : k)}>{ad}</button>
+                ))}
+              </div>
+            </div>
+          )}
           {!kart && (
             <IonItem>
               <IonSelect label="Kaynak" labelPlacement="stacked" value={kaynak} onIonChange={(e) => setKaynak(e.detail.value)} interface="action-sheet">

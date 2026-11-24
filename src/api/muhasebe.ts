@@ -5,7 +5,8 @@ const M = 'hy-muhasebe/v1';
 export const CARI_TIPLERI: Record<string, string> = {
   musteri: 'Müşteri', tedarikci: 'Tedarikçi (hammadde)', uretici: 'Üretici / dış iş', fason_ekip: 'Fason ekip', yevmiyeci: 'Yevmiyeci', diger: 'Diğer',
 };
-export const MUSTERI_TIPLERI: Record<string, string> = { kapi: 'Kapı müşterisi', kurumsal: 'Kurumsal firma', mimar: 'Mimar', ajans: 'Reklam ajansı', tabelaci: 'Tabelacı / fason' };
+/** Cari müşteri tipi → müşteri kategorisi (web 23.11): tabelaci/fason → Fason, ajans → Ajans, mimar → Mimar, kapi/kurumsal → Son kullanıcı. */
+export const MUSTERI_TIPLERI: Record<string, string> = { tabelaci: 'Fason', fason: 'Fason', ajans: 'Ajans', mimar: 'Mimar', kapi: 'Son kullanıcı', kurumsal: 'Son kullanıcı' };
 export const BELGE_TIPLERI: Record<string, string> = { satis: 'Satış', alis: 'Alış', satis_iade: 'Satış iadesi', alis_iade: 'Alış iadesi' };
 export const BELGE_DURUM: Record<string, string> = { taslak: 'Taslak', kesildi: 'Kesildi', iptal: 'İptal' };
 export const ODEME_DURUM: Record<string, string> = { odenmedi: 'Ödenmedi', kismi: 'Kısmi', odendi: 'Ödendi' };

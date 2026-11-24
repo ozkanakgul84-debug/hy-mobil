@@ -22,7 +22,7 @@ export async function kisiGuncelle(id: number, v: { musteri: string; telefon: st
   return istek(`hy-erp/v1/crm/kartlar/${id}/kisi`, { metot: 'PATCH', govde: v });
 }
 
-export async function kartAc(alanlar: { musteri: string; telefon: string; email: string; kaynak: string; tanim: string }): Promise<number | undefined> {
+export async function kartAc(alanlar: { musteri: string; telefon: string; email: string; kaynak: string; tanim: string; musteri_kategori?: string }): Promise<number | undefined> {
   const r = await istek<any>('hy-erp/v1/crm/kartlar', { govde: alanlar });
   const k = r?.yeniKart || r?.kart || r;
   return Number(k?.id || k?.ID || k?.kart_id) || undefined;
@@ -133,3 +133,12 @@ export function adresMetni(p: Kart['adres_panosu'] | Gorev['adres_panosu']): { m
   const lng = Number(ilk?.lng || ilk?.boylam) || undefined;
   return { metin, lat, lng };
 }
+
+/* ── Müşteri kategorisi (web 23.11, hy-musteri-kategori) ── */
+export type MusteriKategori = 'fason' | 'ajans' | 'mimar' | 'son';
+export const MUSTERI_KATEGORILERI: [MusteriKategori, string][] = [['fason', 'Fason'], ['ajans', 'Ajans'], ['mimar', 'Mimar'], ['son', 'Son kullanıcı']];
+/** Cari musteri_tipi değerinden kategori. */
+export const tiptenKategori = (t?: string): MusteriKategori | '' =>
+  t === 'tabelaci' || t === 'fason' ? 'fason' : t === 'ajans' ? 'ajans' : t === 'mimar' ? 'mimar' : t === 'kapi' || t === 'kurumsal' || t === 'son' ? 'son' : '';
+export const kartKategorisi = (kartId: number) => istek<{ kart_id: number; cari?: boolean; kategori: MusteriKategori | ''; ad?: string; fiyat_tipi?: string }>(`hy-erp/v1/musteri-kategori/kart/${kartId}`);
+export const cariKategoriKaydet = (cariId: number, kategori: MusteriKategori) => istek<any>(`hy-erp/v1/musteri-kategori/cari/${cariId}`, { govde: { kategori } });

@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { IonButton, IonButtons, IonContent, IonHeader, IonInput, IonItem, IonList, IonListHeader, IonModal, IonSelect, IonSelectOption, IonTextarea, IonTitle, IonToolbar, useIonToast } from '@ionic/react';
-import { CARI_TIPLERI, MUSTERI_TIPLERI, cariKaydet, type Cari } from '../../api/muhasebe';
+import { CARI_TIPLERI, cariKaydet, type Cari } from '../../api/muhasebe';
+import { cariKategoriKaydet, MUSTERI_KATEGORILERI, tiptenKategori, type MusteriKategori } from '../../api/hy';
+
+const KAT_TIP: Record<MusteriKategori, string> = { fason: 'fason', ajans: 'ajans', mimar: 'mimar', son: 'kapi' };
 
 const BOS: Partial<Cari> = { tip: 'musteri', unvan: '', musteri_tipi: '', efatura_tipi: '', yetkili: '', telefon: '', whatsapp: '', email: '', vergi_no: '', vergi_dairesi: '', il: '', ilce: '', adres: '', iban: '', notlar: '' };
 
@@ -22,7 +25,13 @@ export default function CariFormu({ acik, cari, varsayilanTip = 'musteri', onKap
       const govde: any = { ...v, vergi_no: vn };
       if (cari?.id) govde.id = cari.id;
       if (cari?.crm_kart_id) govde.crm_kart_id = cari.crm_kart_id;
+      const yeniKat = tiptenKategori(v.musteri_tipi);
+      const eskiKat = tiptenKategori(cari?.musteri_tipi);
+      if (cari?.id) govde.musteri_tipi = cari.musteri_tipi || ''; // mevcut caride kategori ayrı uçtan değişir (web ile aynı)
       const r = await cariKaydet(govde);
+      const id = (r as any)?.id || cari?.id;
+      if (cari?.id && yeniKat && yeniKat !== eskiKat) { await cariKategoriKaydet(cari.id, yeniKat); govde.musteri_tipi = v.musteri_tipi; }
+      if (!cari?.id && id && yeniKat) { try { await cariKategoriKaydet(id, yeniKat); } catch { /* musteri_tipi zaten gönderildi */ } }
       toast({ message: 'Cari kaydedildi', duration: 1600, color: 'success' });
       onKaydedildi({ ...(govde as Cari), id: (r as any)?.id || cari?.id });
     } catch (e: any) { toast({ message: e.message, duration: 3000, color: 'danger' }); }
@@ -53,9 +62,9 @@ export default function CariFormu({ acik, cari, varsayilanTip = 'musteri', onKap
           {v.tip === 'musteri' && (
             <>
               <IonItem>
-                <IonSelect label="Müşteri tipi" labelPlacement="stacked" value={v.musteri_tipi || ''} onIonChange={d('musteri_tipi')} interface="action-sheet">
+                <IonSelect label="Müşteri kategorisi" labelPlacement="stacked" value={tiptenKategori(v.musteri_tipi)} onIonChange={(e) => setV((x: any) => ({ ...x, musteri_tipi: e.detail.value ? KAT_TIP[e.detail.value as MusteriKategori] : '' }))} interface="action-sheet">
                   <IonSelectOption value="">—</IonSelectOption>
-                  {Object.entries(MUSTERI_TIPLERI).map(([k, ad]) => <IonSelectOption key={k} value={k}>{ad}</IonSelectOption>)}
+                  {MUSTERI_KATEGORILERI.map(([k, ad]) => <IonSelectOption key={k} value={k}>{ad}</IonSelectOption>)}
                 </IonSelect>
               </IonItem>
               <IonItem>

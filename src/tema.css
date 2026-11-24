@@ -218,3 +218,5 @@
 .hy-tm-satir.alt ion-icon:first-child { font-size: 16px; color: var(--hy-soluk); }
 .hy-tm-satir.aktif { background: rgba(var(--ion-color-primary-rgb), .12); }
 @media (min-width: 768px) { .hy-mo-kpis { grid-template-columns: repeat(4, 1fr); } }
+.hy-kategori { padding: 10px 16px 4px; font-size: 13px; }
+.hy-kategori .hy-cipler { margin-top: 6px; }
