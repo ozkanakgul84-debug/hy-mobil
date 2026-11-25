@@ -28,6 +28,8 @@ import Muhasebe from './pages/muhasebe/Muhasebe';
 import FaturaDetay from './pages/muhasebe/FaturaDetay';
 import { pushBaslat } from './push';
 import TabletMenu from './TabletMenu';
+import KucukSerit from './KucukSerit';
+import { kucukKartlar } from './kucukKart';
 
 export default function App() {
   const [hazir, setHazir] = useState(false);
@@ -49,6 +51,17 @@ export default function App() {
     const h = CapApp.addListener('appStateChange', (s) => { if (s.isActive) yenile(); });
     return () => { clearInterval(t); h.then((x) => x.remove()); };
   }, [oturum]);
+
+  // Telefonun geri tuşu ana ekranda uygulamayı kapatırken altta küçük kart varsa sor (web: sekme kapatılırken uyarı)
+  useEffect(() => {
+    const f = (ev: any) => ev.detail.register(-1, () => {
+      const n = kucukKartlar().length;
+      if (!n) { CapApp.exitApp(); return; }
+      if (window.confirm(`Altta ${n} küçük kart var. Uygulamadan çıkılsın mı?`)) CapApp.exitApp();
+    });
+    document.addEventListener('ionBackButton', f);
+    return () => document.removeEventListener('ionBackButton', f);
+  }, []);
 
   if (!hazir) return <IonApp><div style={{ display: 'grid', placeItems: 'center', height: '100%' }}><IonSpinner /></div></IonApp>;
   if (!oturum) return <IonApp><Giris onGiris={setOturum} /></IonApp>;
@@ -106,6 +119,7 @@ export default function App() {
             </IonTabButton>
           </IonTabBar>
         </IonTabs>
+        <KucukSerit />
         </div>
         </IonSplitPane>
       </IonReactRouter>

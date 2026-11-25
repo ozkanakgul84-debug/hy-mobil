@@ -220,3 +220,15 @@
 @media (min-width: 768px) { .hy-mo-kpis { grid-template-columns: repeat(4, 1fr); } }
 .hy-kategori { padding: 10px 16px 4px; font-size: 13px; }
 .hy-kategori .hy-cipler { margin-top: 6px; }
+
+/* Aşağı indirilmiş kartlar: sekme çubuğunun üstünde şerit */
+.hy-kucuk-serit { position: absolute; left: 0; right: 0; bottom: calc(56px + var(--ion-safe-area-bottom, 0px)); z-index: 20; display: flex; gap: 6px; overflow-x: auto; padding: 6px 8px; background: var(--ion-toolbar-background, var(--ion-background-color, #fff)); border-top: 1px solid rgba(127,127,127,.2); box-shadow: 0 -2px 8px rgba(0,0,0,.08); }
+.hy-kucuk { flex: none; display: flex; align-items: center; max-width: 70vw; border-radius: 10px; background: var(--hy-kart-bg); border: 1px solid rgba(127,127,127,.3); }
+.hy-kucuk .ad { border: 0; background: transparent; color: inherit; padding: 7px 4px 7px 10px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60vw; }
+.hy-kucuk .ad small { color: #16a34a; font-weight: 600; }
+.hy-kucuk .kapat { border: 0; background: transparent; color: var(--hy-soluk); padding: 7px 10px 7px 6px; font-size: 13px; }
+.hy-kucuk.degisti { border-color: #16a34a; animation: hyYanSon 1.2s ease-in-out infinite; }
+@keyframes hyYanSon { 0%, 100% { background: var(--hy-kart-bg); } 50% { background: rgba(34,197,94,.28); } }
+body.hy-serit-var ion-fab[vertical="bottom"] { margin-bottom: 50px; }
+body.hy-serit-var ion-content { --padding-bottom: 50px; }
+body.hy-serit-var ion-footer { margin-bottom: 0; }

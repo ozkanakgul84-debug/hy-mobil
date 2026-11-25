@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonModal, IonPage, IonTitle, IonToolbar, IonSpinner, IonTextarea, IonRefresher, IonRefresherContent, useIonToast, useIonActionSheet, useIonAlert, useIonRouter } from '@ionic/react';
-import { callOutline, logoWhatsapp, cameraOutline, navigateOutline, sendOutline, createOutline, chevronDownOutline, checkmarkCircle, ellipseOutline, mailOutline, chatbubblesOutline, folderOpenOutline, ellipsisVertical, openOutline, archiveOutline, flashOutline, linkOutline, locationOutline, micOutline, receiptOutline, calculatorOutline, documentTextOutline, cubeOutline, pricetagOutline, chevronForwardOutline, closeOutline, checkmarkDoneOutline, paperPlaneOutline as onayIkon, brushOutline, constructOutline } from 'ionicons/icons';
+import { callOutline, logoWhatsapp, cameraOutline, navigateOutline, sendOutline, createOutline, chevronDownOutline, checkmarkCircle, ellipseOutline, mailOutline, chatbubblesOutline, folderOpenOutline, ellipsisVertical, openOutline, archiveOutline, flashOutline, linkOutline, locationOutline, micOutline, receiptOutline, calculatorOutline, documentTextOutline, cubeOutline, pricetagOutline, chevronForwardOutline, closeOutline, checkmarkDoneOutline, paperPlaneOutline as onayIkon, brushOutline, constructOutline, removeOutline } from 'ionicons/icons';
+import { asagiIndir, kucukKaldir } from '../kucukKart';
 import { adresMetni, fotoYukle, kartGetir, kartGuncelle, logCoz, logEkle, surecIsaretle } from '../api/hy';
 import { aktifOturum } from '../api/client';
 import { islemAdimlari, sutun, sutunlar, surecAdimlari, type SurecAdimi } from '../api/sutun';
@@ -48,6 +49,7 @@ export default function KartDetay() {
   const yukle = useCallback(async () => {
     try { setKart(await kartGetir(Number(id))); } catch (e: any) { setHata(e.message); }
   }, [id]);
+  useEffect(() => { kucukKaldir(Number(id)); }, [id]); // açılan kart alt şeritten çıkar
   useEffect(() => {
     yukle();
     siparisGetir(Number(id)).then(setSiparis).catch(() => setSiparis(null));
@@ -305,6 +307,7 @@ export default function KartDetay() {
           <IonButtons slot="start"><IonBackButton defaultHref="/kartlar" text="Kartlar" /></IonButtons>
           <IonTitle>#{id}</IonTitle>
           {kart && <IonButtons slot="end">
+            <IonButton onClick={() => { asagiIndir(kart.id, kart.musteri); router.canGoBack() ? router.goBack() : router.push('/kartlar', 'root'); }} aria-label="Aşağı indir"><IonIcon icon={removeOutline} /></IonButton>
             <IonButton onClick={() => setDuzenle(true)} aria-label="Düzenle"><IonIcon icon={createOutline} /></IonButton>
             <IonButton onClick={digerMenu} aria-label="Diğer"><IonIcon icon={ellipsisVertical} /></IonButton>
           </IonButtons>}
