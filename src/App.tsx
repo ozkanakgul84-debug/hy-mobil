@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { IonApp, IonIcon, IonLabel, IonRouterOutlet, IonTabBar, IonTabButton, IonTabs, IonBadge, IonSpinner } from '@ionic/react';
+import { IonApp, IonIcon, IonLabel, IonRouterOutlet, IonSplitPane, IonTabBar, IonTabButton, IonTabs, IonBadge, IonSpinner } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { albumsOutline, appsOutline, carOutline, homeOutline, notificationsOutline } from 'ionicons/icons';
@@ -11,17 +11,26 @@ import Giris from './pages/Giris';
 import Kartlar from './pages/Kartlar';
 import KartDetay from './pages/KartDetay';
 import WaYazisma from './pages/WaYazisma';
+import KartEposta from './pages/KartEposta';
+import KartYazisma from './pages/KartYazisma';
+import KartDosyalar from './pages/KartDosyalar';
 import Saha from './pages/Saha';
 import GorevDetay from './pages/GorevDetay';
 import Bildirimler from './pages/Bildirimler';
 import Profil from './pages/Profil';
 import Moduller from './pages/Moduller';
 import Ozet from './pages/Ozet';
+import Takvim from './pages/Takvim';
+import IslemKaydi from './pages/IslemKaydi';
 import ModulOzet from './pages/ModulOzet';
 import Fiyat from './pages/Fiyat';
 import Muhasebe from './pages/muhasebe/Muhasebe';
 import FaturaDetay from './pages/muhasebe/FaturaDetay';
 import { pushBaslat } from './push';
+import TabletMenu from './TabletMenu';
+import Panolar from './pages/Panolar';
+import KucukSerit from './KucukSerit';
+import { kucukKartlar } from './kucukKart';
 
 export default function App() {
   const [hazir, setHazir] = useState(false);
@@ -44,6 +53,17 @@ export default function App() {
     return () => { clearInterval(t); h.then((x) => x.remove()); };
   }, [oturum]);
 
+  // Telefonun geri tuşu ana ekranda uygulamayı kapatırken altta küçük kart varsa sor (web: sekme kapatılırken uyarı)
+  useEffect(() => {
+    const f = (ev: any) => ev.detail.register(-1, () => {
+      const n = kucukKartlar().length;
+      if (!n) { CapApp.exitApp(); return; }
+      if (window.confirm(`Altta ${n} küçük kart var. Uygulamadan çıkılsın mı?`)) CapApp.exitApp();
+    });
+    document.addEventListener('ionBackButton', f);
+    return () => document.removeEventListener('ionBackButton', f);
+  }, []);
+
   if (!hazir) return <IonApp><div style={{ display: 'grid', placeItems: 'center', height: '100%' }}><IonSpinner /></div></IonApp>;
   if (!oturum) return <IonApp><Giris onGiris={setOturum} /></IonApp>;
 
@@ -52,12 +72,18 @@ export default function App() {
   return (
     <IonApp>
       <IonReactRouter>
+        <IonSplitPane contentId="ana" when="(min-width: 768px)">
+        <TabletMenu />
+        <div id="ana" className="ion-page">
         <IonTabs>
           <IonRouterOutlet>
             <Routes>
               <Route path="/kartlar" element={<Kartlar />} />
               <Route path="/kartlar/:id" element={<KartDetay />} />
               <Route path="/kartlar/:id/whatsapp" element={<WaYazisma />} />
+              <Route path="/kartlar/:id/eposta" element={<KartEposta />} />
+              <Route path="/kartlar/:id/yazisma" element={<KartYazisma />} />
+              <Route path="/kartlar/:id/dosyalar" element={<KartDosyalar />} />
               <Route path="/saha" element={<Saha />} />
               <Route path="/saha/:id" element={<GorevDetay />} />
               <Route path="/bildirimler" element={<Bildirimler onSayac={setOkunmamis} />} />
@@ -65,6 +91,9 @@ export default function App() {
               <Route path="/muhasebe" element={<Muhasebe />} />
               <Route path="/muhasebe/fatura/:id" element={<FaturaDetay />} />
               <Route path="/ozet" element={<Ozet />} />
+              <Route path="/takvim" element={<Takvim />} />
+              <Route path="/panolar" element={<Panolar />} />
+              <Route path="/islem-kaydi" element={<IslemKaydi />} />
               <Route path="/modul/:mod" element={<ModulOzet />} />
               <Route path="/moduller" element={<Moduller />} />
               <Route path="/profil" element={<Profil oturum={aktifOturum()!} onCikis={() => setOturum(null)} />} />
@@ -92,6 +121,9 @@ export default function App() {
             </IonTabButton>
           </IonTabBar>
         </IonTabs>
+        <KucukSerit />
+        </div>
+        </IonSplitPane>
       </IonReactRouter>
     </IonApp>
   );

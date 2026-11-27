@@ -1,7 +1,7 @@
 import {
   bagOutline, barChartOutline, briefcaseOutline, calculatorOutline, callOutline, cashOutline, constructOutline,
   cubeOutline, documentTextOutline, idCardOutline, listOutline, locationOutline, megaphoneOutline, peopleOutline,
-  receiptOutline, scaleOutline,
+  receiptOutline, scaleOutline, colorPaletteOutline, brushOutline, imagesOutline, sparklesOutline,
 } from 'ionicons/icons';
 import { istek } from './client';
 import type { Oturum } from './types';
@@ -55,8 +55,8 @@ export interface ModulTanim {
 
 const hub = (mod: string, i: number): PanelHedef => [`#btn${mod}`, `#p-${mod} .hm-kutu[data-i="${i}"]`];
 
-/** Sol menüyle aynı sıra (özkan 2026-11-12): Pazarlama, CRM, Fiyatlandırma, Sunum ve Teklif, Üretim, Depolama,
- *  Muhasebe (Perakende Satış, Günlük Harcamalar), İK, Saha Takip, IP Santral, Dijital Pazarlama, Listeler. */
+/** Sol menüyle aynı sıra (özkan 2026-11-12): Pazarlama, CRM, Fiyatlandırma, Tasarım ve Sunumlar, Üretim, Depolama,
+ *  Muhasebe (Teklifler, Perakende Satış, Günlük Harcamalar), İK, Saha Takip, IP Santral, Dijital Pazarlama, Listeler. */
 export const MODULLER: ModulTanim[] = [
   { id: 'pazarlama', ad: 'Pazarlama', acik: 'Aranacaklar, temaslar, kaynaklar', ikon: megaphoneOutline, hedef: ['#btnpazarlama'], lisans: ['pazarlama'] },
   { id: 'crm', ad: 'CRM', acik: 'Müşteri kartları ve yazışmalar', ikon: peopleOutline, yol: '/kartlar', hedef: ['#btncrm'], lisans: ['crm'] },
@@ -65,11 +65,12 @@ export const MODULLER: ModulTanim[] = [
     alt: [{ ad: 'Fiyat hesapla', acik: 'Kabartma harf ve zemin', ikon: calculatorOutline, yol: '/fiyat' }, { ad: 'Panelde fiyatlandırma', acik: 'Tüm hesap modülleri', ikon: barChartOutline, hedef: ['#btnfiyatlama'] }],
   },
   {
-    id: 'teklifhub', ad: 'Sunum ve Teklif', acik: 'Teklif, görsel sunum, 3D Stüdyo', ikon: documentTextOutline, hedef: ['#btnteklifhub'], lisans: ['teklif'],
+    id: 'teklifhub', ad: 'Tasarım ve Sunumlar', acik: '2D / 3D tasarım, görsel sunum ve teklif', ikon: colorPaletteOutline, hedef: ['#btnteklifhub'], lisans: ['teklif'],
     alt: [
-      { ad: 'Teklif Listesi', acik: 'Verilen teklifler, durumları ve PDF', ikon: documentTextOutline, hedef: hub('teklifhub', 0) },
-      { ad: 'Görsel Sunum (3D Stüdyo)', acik: '3D görselli sunum dosyası', ikon: cubeOutline, hedef: hub('teklifhub', 1) },
-      { ad: 'Görsel Teklif (3D Stüdyo)', acik: 'Gündüz ve gece görselli teklif', ikon: cubeOutline, hedef: hub('teklifhub', 2) },
+      { ad: '2D Tasarım', acik: 'Cam giydirme, roll-up, araç kaplama; her kayıt karta revizyon', ikon: brushOutline, hedef: hub('teklifhub', 0) },
+      { ad: '3D Tasarım', acik: 'Harf ve zemin, malzeme ve ışık, gerçekçi render', ikon: cubeOutline, hedef: hub('teklifhub', 1) },
+      { ad: 'Görsel Sunum Hazırla', acik: 'Hazır şablonlarla 3D görselli sunum', ikon: imagesOutline, hedef: hub('teklifhub', 2), yakinda: true },
+      { ad: 'Görsel Teklif Oluştur', acik: 'Gündüz ve gece görselli teklif', ikon: sparklesOutline, hedef: hub('teklifhub', 3), yakinda: true },
     ],
   },
   {
@@ -83,9 +84,10 @@ export const MODULLER: ModulTanim[] = [
   },
   { id: 'depo', ad: 'Depolama', acik: 'Stok, hareketler, fire', ikon: bagOutline, hedef: ['#btndepo'], lisans: ['muhasebeStok', 'depo'] },
   {
-    id: 'muhasebe', ad: 'Muhasebe', acik: 'Fatura, cari, perakende, harcama', ikon: scaleOutline, yol: '/muhasebe', hedef: ['#btnmuhasebe'], lisans: ['muhasebe', 'muhasebeStok'],
+    id: 'muhasebe', ad: 'Muhasebe', acik: 'Fatura, cari, teklif, perakende, harcama', ikon: scaleOutline, yol: '/muhasebe', hedef: ['#btnmuhasebe'], lisans: ['muhasebe', 'muhasebeStok'],
     alt: [
       { ad: 'Faturalar ve cariler', acik: 'Fatura kes, cari ekle', ikon: receiptOutline, yol: '/muhasebe' },
+      { ad: 'Teklif Listesi', acik: 'Verilen teklifler, durumları ve PDF', ikon: documentTextOutline, hedef: ['#btnteklif'] },
       { ad: 'Perakende Satış', acik: 'Kasadan hızlı satış', ikon: cashOutline, hedef: ['#btnperakende'] },
       { ad: 'Günlük Harcamalar', acik: 'Nakit kasadan harcama girişi', ikon: receiptOutline, hedef: ['#btnhizliharcama'] },
     ],

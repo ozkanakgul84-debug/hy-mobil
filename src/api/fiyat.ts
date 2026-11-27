@@ -4,9 +4,12 @@ export const MUSTERI_TIPLERI: [string, string, string][] = [
   // [dna anahtarı, sunucu sonucu anahtarı, ad]
   ['sonkullanici', 'sonKullanici', 'Son kullanıcı'],
   ['mimar', 'mimar', 'Mimar'],
-  ['tabelaci', 'tabelaci', 'Tabelacı'],
+  ['tabelaci', 'tabelaci', 'Ajans'],
   ['fason', 'fason', 'Fason'],
 ];
+
+/** Müşteri kategorisi → fiyat çarpanı anahtarı (web ile aynı): fason→fason, ajans→tabelaci, mimar→mimar, son→sonkullanici. */
+export const KATEGORI_TIP: Record<string, string> = { fason: 'fason', ajans: 'tabelaci', mimar: 'mimar', son: 'sonkullanici' };
 
 export type Satis = Record<string, number>;
 export interface FiyatYetki { yonetici?: boolean; maliyetGor?: boolean; musteriTipleri?: string[]; kesimTeknikleri?: string[] }

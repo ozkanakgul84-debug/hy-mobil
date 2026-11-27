@@ -1,6 +1,8 @@
 import { IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonItem, IonLabel, IonList, IonNote, IonPage, IonTitle, IonToolbar } from '@ionic/react';
 import { cikisYap, SUNUCU } from '../api/client';
+import { kucukKartlar } from '../kucukKart';
 import type { Oturum } from '../api/types';
+import { SURUM } from '../surum';
 
 export default function Profil({ oturum, onCikis }: { oturum: Oturum; onCikis: () => void }) {
   return (
@@ -20,8 +22,8 @@ export default function Profil({ oturum, onCikis }: { oturum: Oturum; onCikis: (
           <IonItem button detail href={SUNUCU + '/erp-paneli/'} target="_blank"><IonLabel>Tam paneli tarayıcıda aç</IonLabel></IonItem>
         </IonList>
         <div style={{ padding: 16 }}>
-          <IonButton expand="block" color="danger" fill="outline" onClick={async () => { await cikisYap(); onCikis(); }}>Çıkış yap</IonButton>
-          <p className="hy-soluk" style={{ textAlign: 'center' }}>Hesapla Yönet · sürüm 0.5.0</p>
+          <IonButton expand="block" color="danger" fill="outline" onClick={async () => { const n = kucukKartlar().length; if (n && !window.confirm(`Altta ${n} küçük kart var. Çıkış yapılsın mı?`)) return; await cikisYap(); onCikis(); }}>Çıkış yap</IonButton>
+          <p className="hy-soluk" style={{ textAlign: 'center' }}>Hesapla Yönet · sürüm {SURUM}</p>
         </div>
       </IonContent>
     </IonPage>

@@ -5,6 +5,9 @@ import {
 } from '@ionic/react';
 import { chatbubbleEllipsesOutline, chevronForwardOutline, mailOutline, personCircleOutline } from 'ionicons/icons';
 import { aktifOturum } from '../api/client';
+import { SUNUCU } from '../api/client';
+import { yeniSurum } from '../surum';
+import { usePanel } from '../panelKanca';
 import { anaOzet, kalinParcala, MODULLER, modulAcik, modulOzet, once, type AnaOzet, type ModulOzet } from '../api/ozet';
 
 function selam() {
@@ -16,6 +19,7 @@ function selam() {
 export default function Ozet() {
   const o = aktifOturum();
   const router = useIonRouter();
+  const panel = usePanel();
   const [ana, setAna] = useState<AnaOzet | null>(null);
   const [modler, setModler] = useState<Record<string, ModulOzet | 'hata'>>({});
   const gorunen = MODULLER.filter((m) => modulAcik(m, o));
@@ -34,7 +38,8 @@ export default function Ozet() {
     };
     await Promise.all([isci(), isci(), isci()]);
   }
-  useEffect(() => { yukle(); }, []);
+  const [guncel, setGuncel] = useState<string | null>(null);
+  useEffect(() => { yukle(); yeniSurum().then(setGuncel); }, []);
   useIonViewWillEnter(() => { if (ana) anaOzet().then(setAna).catch(() => {}); });
 
   const k = ana?.kartlar;
@@ -56,11 +61,17 @@ export default function Ozet() {
           <small className="hy-soluk">{new Date().toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' })}{o?.sirketAdi ? ' · ' + o.sirketAdi : ''}</small>
         </div>
 
+        {guncel && (
+          <a className="hy-guncelle" href={SUNUCU + '/uygulama/hesapla-yonet.apk'} target="_blank" rel="noreferrer">
+            <b>Yeni sürüm var: {guncel}</b><span>Dokunun, indirip üzerine kurun (silmenize gerek yok).</span>
+          </a>
+        )}
+
         {ana?.crm !== false && k && (
           <div className="hy-mo-kpis">
             <button className="hy-mo-kpi" style={{ borderTopColor: '#3b82f6' }} onClick={() => router.push('/kartlar')}><small>Açık kart</small><b>{k.acik}</b><span>{k.haftaYeni} bu hafta yeni</span></button>
             <button className="hy-mo-kpi" style={{ borderTopColor: '#ef4444' }} onClick={() => router.push('/kartlar')}><small>Termini geçen</small><b>{ana.termin?.gecenSayi ?? 0}</b><span>{ana.termin?.yaklasan ?? 0} yaklaşan</span></button>
-            <button className="hy-mo-kpi" style={{ borderTopColor: '#f59e0b' }} onClick={() => router.push('/modul/teklifhub')}><small>Bekleyen teklif</small><b>{ana.teklif?.sayi ?? 0}</b><span>{ana.teklif?.toplam ? ana.teklif.toplam.toLocaleString('tr-TR') + ' ₺' : 'cevap bekliyor'}</span></button>
+            <button className="hy-mo-kpi" style={{ borderTopColor: '#f59e0b' }} onClick={() => panel.ac(['#btnteklif'])}><small>Bekleyen teklif</small><b>{ana.teklif?.sayi ?? 0}</b><span>{ana.teklif?.toplam ? ana.teklif.toplam.toLocaleString('tr-TR') + ' ₺' : 'cevap bekliyor'}</span></button>
             {ana.mesajGorebilir !== false && <button className="hy-mo-kpi" style={{ borderTopColor: '#22c55e' }} onClick={() => router.push('/kartlar')}><small>Okunmamış mesaj</small><b>{okunmamis}</b><span>WhatsApp ve e-posta</span></button>}
           </div>
         )}

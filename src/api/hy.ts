@@ -22,7 +22,7 @@ export async function kisiGuncelle(id: number, v: { musteri: string; telefon: st
   return istek(`hy-erp/v1/crm/kartlar/${id}/kisi`, { metot: 'PATCH', govde: v });
 }
 
-export async function kartAc(alanlar: { musteri: string; telefon: string; email: string; kaynak: string; tanim: string }): Promise<number | undefined> {
+export async function kartAc(alanlar: { musteri: string; telefon: string; email: string; kaynak: string; tanim: string; musteri_kategori?: string }): Promise<number | undefined> {
   const r = await istek<any>('hy-erp/v1/crm/kartlar', { govde: alanlar });
   const k = r?.yeniKart || r?.kart || r;
   return Number(k?.id || k?.ID || k?.kart_id) || undefined;
@@ -37,11 +37,38 @@ export async function waGetir(id: number, degisim = ''): Promise<WaYazisma> {
   return istek<WaYazisma>(`hy-erp/v1/crm/kartlar/${id}/whatsapp`, { sorgu: degisim ? { degisim } : {} });
 }
 
-export async function waGonder(id: number, mesaj: string, dosya?: { blob: Blob; ad: string }) {
+export async function waGonder(id: number, mesaj: string, dosya?: { blob: Blob; ad: string }, kime = '') {
   const fd = new FormData();
   if (mesaj) fd.append('mesaj', mesaj);
+  if (kime) fd.append('kime', kime);
   if (dosya) fd.append('dosya', dosya.blob, dosya.ad);
   return istek(`hy-erp/v1/crm/kartlar/${id}/whatsapp`, { govde: fd });
+}
+
+/** WhatsApp 📎 menüsü: firma (cari) bilgileri, banka hesapları, konum. Web paneliyle aynı uç. */
+export interface WaAtacBilgi { firma: { unvan?: string; vergi_no?: string; vergi_dairesi?: string; adres?: string; telefon?: string; email?: string; web?: string; konum?: string }; hesaplar: { ad?: string; banka?: string; iban?: string; doviz?: string; sahip?: string }[] }
+export const waAtacBilgi = () => istek<WaAtacBilgi>('hy-erp/v1/wa/atac-bilgi');
+
+/** Kartın ek numaraları ("Kime" seçimi). pencere: son 24 saatte yazdı mı. */
+export const waEkNumara = (id: number) => istek<{ numaralar: { telefon: string; ad?: string; pencere?: boolean }[]; ana_pencere?: boolean }>(`hy-erp/v1/crm/kartlar/${id}/ek-numara`);
+
+/** Panelin hy-wa-atac metin biçimleri. */
+export function cariMetni(f: WaAtacBilgi['firma']) {
+  const v = [f.vergi_dairesi, f.vergi_no].filter(Boolean).join(' / ');
+  return ['*Firma bilgilerimiz*', f.unvan && 'Ünvan: ' + f.unvan, v && 'Vergi dairesi / no: ' + v, f.adres && 'Adres: ' + f.adres, f.telefon && 'Telefon: ' + f.telefon, f.email && 'E-posta: ' + f.email].filter(Boolean).join('\n');
+}
+export function ibanMetni(b: WaAtacBilgi) {
+  const h = (b.hesaplar || []).filter((x) => x.iban);
+  if (!h.length) return '';
+  return '*Banka hesap bilgilerimiz*\n' + h.map((x) => [
+    'Hesap adı: ' + (x.sahip || x.ad || b.firma.unvan || ''),
+    'Banka: ' + (x.banka || '') + (x.doviz && x.doviz !== 'TL' ? ` (${x.doviz} hesabı)` : ''),
+    'IBAN: ' + x.iban,
+  ].join('\n')).join('\n\n');
+}
+export function konumMetni(f: WaAtacBilgi['firma']) {
+  const url = f.konum || 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent([f.unvan, f.adres].filter(Boolean).join(' '));
+  return ['📍 *Konumumuz*', f.unvan && '*' + f.unvan + '*', f.adres, url].filter(Boolean).join('\n');
 }
 
 export async function logEkle(id: number, metin: string) {
@@ -106,3 +133,20 @@ export function adresMetni(p: Kart['adres_panosu'] | Gorev['adres_panosu']): { m
   const lng = Number(ilk?.lng || ilk?.boylam) || undefined;
   return { metin, lat, lng };
 }
+
+/* ── Müşteri kategorisi (web 23.11, hy-musteri-kategori) ── */
+export type MusteriKategori = 'fason' | 'ajans' | 'mimar' | 'son';
+export const MUSTERI_KATEGORILERI: [MusteriKategori, string][] = [['fason', 'Fason'], ['ajans', 'Ajans'], ['mimar', 'Mimar'], ['son', 'Son kullanıcı']];
+/** Cari musteri_tipi değerinden kategori. */
+export const tiptenKategori = (t?: string): MusteriKategori | '' =>
+  t === 'tabelaci' || t === 'fason' ? 'fason' : t === 'ajans' ? 'ajans' : t === 'mimar' ? 'mimar' : t === 'kapi' || t === 'kurumsal' || t === 'son' ? 'son' : '';
+export const kartKategorisi = (kartId: number) => istek<{ kart_id: number; cari?: boolean; kategori: MusteriKategori | ''; ad?: string; fiyat_tipi?: string }>(`hy-erp/v1/musteri-kategori/kart/${kartId}`);
+export const cariKategoriKaydet = (cariId: number, kategori: MusteriKategori) => istek<any>(`hy-erp/v1/musteri-kategori/cari/${cariId}`, { govde: { kategori } });
+
+/* ── Yeni mesaj uyarıları ve Kart Ara (web 26.11, hy-yeni-mesaj) ── */
+/** kart_id → ['wa','ep','log']: okunmamış WhatsApp / e-posta / log. */
+export const yenilikler = () => istek<{ yenilik: Record<string, string[]> }>('hy-erp/v1/crm/yenilikler').then((r) => r.yenilik || {});
+export const yenilikGoruldu = (kartId: number) => istek<any>(`hy-erp/v1/crm/yenilikler/${kartId}/goruldu`, { govde: {} });
+export interface KartAraSonuc { id: number; musteri: string; telefon?: string; durum: string; tanim?: string; alan?: string; parca?: string }
+/** Sunucuda arar: kart no, müşteri, telefon, e-posta, iş detayı ve log; arşiv dahil. Yetki ve iletişim gizleme sunucuda. */
+export const crmKartAra = (q: string) => istek<{ sonuclar: KartAraSonuc[]; iletisim?: boolean }>('hy-erp/v1/crm/kart-ara', { sorgu: { q } });

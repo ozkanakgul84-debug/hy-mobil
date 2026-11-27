@@ -78,6 +78,7 @@ export interface LogSatiri {
 
 export interface WaMesaj {
   id: number | string;
+  ekstra?: { tel?: string; tel_ad?: string; [k: string]: any };
   yon: 'gelen' | 'giden';
   tip: string;
   metin: string;
