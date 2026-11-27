@@ -142,3 +142,11 @@ export const tiptenKategori = (t?: string): MusteriKategori | '' =>
   t === 'tabelaci' || t === 'fason' ? 'fason' : t === 'ajans' ? 'ajans' : t === 'mimar' ? 'mimar' : t === 'kapi' || t === 'kurumsal' || t === 'son' ? 'son' : '';
 export const kartKategorisi = (kartId: number) => istek<{ kart_id: number; cari?: boolean; kategori: MusteriKategori | ''; ad?: string; fiyat_tipi?: string }>(`hy-erp/v1/musteri-kategori/kart/${kartId}`);
 export const cariKategoriKaydet = (cariId: number, kategori: MusteriKategori) => istek<any>(`hy-erp/v1/musteri-kategori/cari/${cariId}`, { govde: { kategori } });
+
+/* ── Yeni mesaj uyarıları ve Kart Ara (web 26.11, hy-yeni-mesaj) ── */
+/** kart_id → ['wa','ep','log']: okunmamış WhatsApp / e-posta / log. */
+export const yenilikler = () => istek<{ yenilik: Record<string, string[]> }>('hy-erp/v1/crm/yenilikler').then((r) => r.yenilik || {});
+export const yenilikGoruldu = (kartId: number) => istek<any>(`hy-erp/v1/crm/yenilikler/${kartId}/goruldu`, { govde: {} });
+export interface KartAraSonuc { id: number; musteri: string; telefon?: string; durum: string; tanim?: string; alan?: string; parca?: string }
+/** Sunucuda arar: kart no, müşteri, telefon, e-posta, iş detayı ve log; arşiv dahil. Yetki ve iletişim gizleme sunucuda. */
+export const crmKartAra = (q: string) => istek<{ sonuclar: KartAraSonuc[]; iletisim?: boolean }>('hy-erp/v1/crm/kart-ara', { sorgu: { q } });

@@ -1,5 +1,5 @@
 import { IonContent, IonHeader, IonIcon, IonMenu, IonMenuToggle, IonTitle, IonToolbar, useIonRouter } from '@ionic/react';
-import { albumsOutline, barChartOutline, calendarOutline, gridOutline, homeOutline, listOutline, notificationsOutline, openOutline, settingsOutline } from 'ionicons/icons';
+import { albumsOutline, barChartOutline, layersOutline, calendarOutline, gridOutline, homeOutline, listOutline, notificationsOutline, openOutline, settingsOutline } from 'ionicons/icons';
 import { useLocation } from 'react-router-dom';
 import { aktifOturum } from './api/client';
 import { MODULLER, modulAcik } from './api/ozet';
@@ -39,6 +39,7 @@ export default function TabletMenu() {
             </div>
           ))}
           <div className="hy-tm-baslik">Genel işlemler</div>
+          {satir('panolar', 'Departman Panoları', layersOutline, () => git('/panolar'), { aktif: yer === '/panolar' })}
           {satir('rapor', 'Raporlar', barChartOutline, () => panel.ac(['cagir:HYRapor.ac']), { panelde: true })}
           <div className="hy-tm-baslik">Yönetim</div>
           {o?.rol === 'YONETICI' && satir('islem', 'İşlem Kayıtları', listOutline, () => git('/islem-kaydi'), { aktif: yer === '/islem-kaydi' })}

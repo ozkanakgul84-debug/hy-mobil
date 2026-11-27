@@ -232,3 +232,15 @@
 body.hy-serit-var ion-fab[vertical="bottom"] { margin-bottom: 50px; }
 body.hy-serit-var ion-content { --padding-bottom: 50px; }
 body.hy-serit-var ion-footer { margin-bottom: 0; }
+
+/* Yeni mesaj uyarıları ve Kart Ara (web hy-yeni-mesaj) */
+.hy-kartara-dugme { display: flex; align-items: center; gap: 8px; width: calc(100% - 24px); margin: 4px 12px 8px; padding: 10px 12px; border-radius: 12px; border: 0; background: rgba(127,127,127,.12); color: inherit; font-size: 15px; font-weight: 600; text-align: left; }
+.hy-kartara-dugme small { font-weight: 400; color: var(--hy-soluk); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hy-yeni-serit { display: flex; gap: 6px; overflow-x: auto; padding: 4px 12px 8px; align-items: center; }
+.hy-yeni-serit .bas { flex: none; font-size: 12px; font-weight: 700; color: #16a34a; }
+.hy-yeni-serit button { flex: none; display: inline-flex; align-items: center; gap: 5px; border: 1px solid #16a34a; background: rgba(34,197,94,.1); color: inherit; border-radius: 999px; padding: 5px 10px; font-size: 13px; white-space: nowrap; }
+.hy-yeni-serit button ion-icon { color: #16a34a; }
+.hy-liste-kart.yeni, .hy-pano-kart.yeni { box-shadow: 0 0 0 2px #22c55e; }
+.hy-liste-kart.parla, .hy-pano-kart.parla { animation: hyYanSon .65s ease-in-out 4; }
+.hy-yeni-rozet { border: 0; background: #16a34a; color: #fff; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 2px 8px; margin-left: auto; margin-right: 6px; }
+mark { background: rgba(250,204,21,.45); color: inherit; border-radius: 2px; }

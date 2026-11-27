@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonModal, IonPage, IonTitle, IonToolbar, IonSpinner, IonTextarea, IonRefresher, IonRefresherContent, useIonToast, useIonActionSheet, useIonAlert, useIonRouter } from '@ionic/react';
 import { callOutline, logoWhatsapp, cameraOutline, navigateOutline, sendOutline, createOutline, chevronDownOutline, checkmarkCircle, ellipseOutline, mailOutline, chatbubblesOutline, folderOpenOutline, ellipsisVertical, openOutline, archiveOutline, flashOutline, linkOutline, locationOutline, micOutline, receiptOutline, calculatorOutline, documentTextOutline, cubeOutline, pricetagOutline, chevronForwardOutline, closeOutline, checkmarkDoneOutline, paperPlaneOutline as onayIkon, brushOutline, constructOutline, removeOutline } from 'ionicons/icons';
 import { asagiIndir, kucukKaldir } from '../kucukKart';
-import { adresMetni, fotoYukle, kartGetir, kartGuncelle, logCoz, logEkle, surecIsaretle } from '../api/hy';
+import { adresMetni, fotoYukle, kartGetir, kartGuncelle, logCoz, logEkle, surecIsaretle, yenilikGoruldu } from '../api/hy';
 import { aktifOturum } from '../api/client';
 import { islemAdimlari, sutun, sutunlar, surecAdimlari, type SurecAdimi } from '../api/sutun';
 import { adresEkle, ARSIV_SEBEPLERI, hizliIs, kartiArsivle, neredenGetir, neredenKaydet, siparisGetir, siparisLinkGonder, type Siparis } from '../api/kart';
@@ -12,6 +12,7 @@ import { sesleYaz } from '../sesYazi';
 import { SahaBolumu, SesKaydi, TasarimBolumu, TeklifBolumu } from './KartEkler';
 import KartFormu from './KartFormu';
 import SiparisDetay from './SiparisDetay';
+import IsEmirleri from './IsEmirleri';
 import FaturaFormu, { type FaturaBaslangic } from './muhasebe/FaturaFormu';
 import { crmKartCariAc, crmKartFatura } from '../api/muhasebe';
 import type { Kart } from '../api/types';
@@ -49,7 +50,7 @@ export default function KartDetay() {
   const yukle = useCallback(async () => {
     try { setKart(await kartGetir(Number(id))); } catch (e: any) { setHata(e.message); }
   }, [id]);
-  useEffect(() => { kucukKaldir(Number(id)); }, [id]); // açılan kart alt şeritten çıkar
+  useEffect(() => { kucukKaldir(Number(id)); yenilikGoruldu(Number(id)).catch(() => {}); }, [id]); // açılan kart alt şeritten çıkar; yeni mesaj uyarısı düşer (web ile aynı)
   useEffect(() => {
     yukle();
     siparisGetir(Number(id)).then(setSiparis).catch(() => setSiparis(null));
@@ -429,6 +430,7 @@ export default function KartDetay() {
 
             {modulVar('teklif') && <TasarimBolumu kartId={kart.id} />}
             {modulVar('teklif') && <TeklifBolumu kartId={kart.id} />}
+            <IsEmirleri kartId={kart.id} />
             <SahaBolumu kartId={kart.id} />
 
             <div style={{ height: 24 }} />

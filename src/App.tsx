@@ -28,6 +28,7 @@ import Muhasebe from './pages/muhasebe/Muhasebe';
 import FaturaDetay from './pages/muhasebe/FaturaDetay';
 import { pushBaslat } from './push';
 import TabletMenu from './TabletMenu';
+import Panolar from './pages/Panolar';
 import KucukSerit from './KucukSerit';
 import { kucukKartlar } from './kucukKart';
 
@@ -91,6 +92,7 @@ export default function App() {
               <Route path="/muhasebe/fatura/:id" element={<FaturaDetay />} />
               <Route path="/ozet" element={<Ozet />} />
               <Route path="/takvim" element={<Takvim />} />
+              <Route path="/panolar" element={<Panolar />} />
               <Route path="/islem-kaydi" element={<IslemKaydi />} />
               <Route path="/modul/:mod" element={<ModulOzet />} />
               <Route path="/moduller" element={<Moduller />} />
